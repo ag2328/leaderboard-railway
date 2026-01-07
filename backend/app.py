@@ -251,7 +251,8 @@ def get_team_games_endpoint(team_id):
     if not season:
         return jsonify({'error': 'Season not found'}), 404
     
-    games = get_team_games(team_id, season['id'])
+    # Get all games regardless of status (so we can show scheduled games too)
+    games = get_team_games(team_id, season['id'], status=None)
     
     # Get game summaries for each game
     games_with_summaries = []
