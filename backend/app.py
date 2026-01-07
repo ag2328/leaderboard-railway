@@ -67,11 +67,18 @@ def get_season_from_request():
 @app.route('/', methods=['GET'])
 def root():
     """Root endpoint for Railway health checks."""
+    print("ROOT ENDPOINT HIT!", flush=True)  # Debug: confirm requests reach app
     return jsonify({
         'status': 'ok',
         'service': 'leaderboard-api',
         'version': '1.0.0'
     }), 200
+
+@app.route('/health', methods=['GET'])
+def health():
+    """Health check endpoint for Railway."""
+    print("HEALTH ENDPOINT HIT!", flush=True)
+    return jsonify({'status': 'ok'}), 200
 
 @app.route('/api/health', methods=['GET'])
 def health():
