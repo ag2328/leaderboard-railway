@@ -35,3 +35,6 @@ dist/
 build/
 *.egg-info/
 
+# Temporary reference files
+temp_original_repo/
+
