@@ -36,43 +36,15 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend
 
-# Add request logging middleware
+# Add request logging middleware (only log in debug mode to reduce noise)
 @app.before_request
 def log_request_info():
-    import sys
-    print(f"[Request] {request.method} {request.path} from {request.remote_addr}", flush=True)
-    sys.stdout.flush()
-
-# Ensure app is ready - add a simple test
-@app.route('/ready', methods=['GET'])
-def ready():
-    """Readiness check endpoint."""
-    return jsonify({'ready': True}), 200
+    if os.getenv('FLASK_DEBUG', 'false').lower() == 'true':
+        print(f"[Request] {request.method} {request.path}", flush=True)
 
 # Configuration
 CURRENT_SEASON = os.getenv('CURRENT_SEASON', 'Spring 2026')
 AUTO_SYNC_ENABLED = os.getenv('AUTO_SYNC_ENABLED', 'false').lower() == 'true'
-
-# Log startup info (for gunicorn workers)
-import sys
-print(f"[App Startup] Flask app initialized", flush=True)
-print(f"[App Startup] Current Season: {CURRENT_SEASON}", flush=True)
-print(f"[App Startup] Auto Sync: {AUTO_SYNC_ENABLED}", flush=True)
-print(f"[App Startup] DATABASE_URL set: {bool(os.getenv('DATABASE_URL'))}", flush=True)
-print(f"[App Startup] App is ready to accept requests", flush=True)
-sys.stdout.flush()
-
-# Test database connection on startup (non-blocking - don't fail if DB is slow)
-try:
-    from models import get_db_connection
-    test_conn = get_db_connection()
-    test_conn.close()
-    print(f"[App Startup] Database connection test: SUCCESS", flush=True)
-except Exception as e:
-    print(f"[App Startup] Database connection test: FAILED - {str(e)}", flush=True)
-    import traceback
-    traceback.print_exc()
-sys.stdout.flush()
 
 
 # ============================================================================
@@ -94,17 +66,11 @@ def get_season_from_request():
 
 @app.route('/', methods=['GET'])
 def root():
-    """Root endpoint for Railway health checks - must be fast and simple."""
-    import sys
-    import time
-    print(f"[Request] GET / - Health check at {time.time()}", flush=True)
-    sys.stdout.flush()
-    # Return immediately without any processing
+    """Root endpoint for Railway health checks."""
     return jsonify({
         'status': 'ok',
         'service': 'leaderboard-api',
-        'version': '1.0.0',
-        'timestamp': time.time()
+        'version': '1.0.0'
     }), 200
 
 @app.route('/api/health', methods=['GET'])
@@ -415,14 +381,7 @@ def internal_error(error):
 # ============================================================================
 
 if __name__ == '__main__':
-    port = int(os.getenv('PORT', 5000))
-    debug = os.getenv('FLASK_DEBUG', 'false').lower() == 'true'
-    
-    print(f"Starting Flask app on port {port}")
-    print(f"Current Season: {CURRENT_SEASON}")
-    print(f"Auto Sync: {AUTO_SYNC_ENABLED}")
-    print(f"Flask Env: {os.getenv('FLASK_ENV', 'not set')}")
-    print(f"DATABASE_URL set: {bool(os.getenv('DATABASE_URL'))}")
-    
-    app.run(host='0.0.0.0', port=port, debug=debug)
+    port = int(os.environ.get('PORT', 5000))
+    debug = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+    app.run(debug=debug, host='0.0.0.0', port=port)
 
