@@ -326,10 +326,12 @@ body {
 }
 
 .schedule-team-logo {
-    width: 40px;
-    height: 40px;
-    object-fit: contain;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
     flex-shrink: 0;
+    background: var(--surface-2);
 }
 
 .schedule-team-name {
@@ -353,6 +355,13 @@ body {
     align-items: center;
     justify-content: center;
     min-width: 60px;
+}
+
+.schedule-game-vs {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: lowercase;
 }
 
 .schedule-game-time {
@@ -404,8 +413,8 @@ body {
     }
 
     .schedule-team-logo {
-        width: 32px;
-        height: 32px;
+        width: 48px;
+        height: 48px;
     }
 
     .schedule-team-name {
@@ -414,6 +423,10 @@ body {
 
     .schedule-team-score {
         font-size: 1.25rem;
+    }
+
+    .schedule-game-vs {
+        font-size: 0.8rem;
     }
 
     .schedule-game-time {
@@ -465,10 +478,12 @@ body {
 }
 
 .game-card-logo {
-    width: 64px;
-    height: 64px;
-    object-fit: contain;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
     flex-shrink: 0;
+    background: var(--surface-2);
 }
 
 .game-card-team-name {
@@ -502,8 +517,8 @@ body {
     }
     
     .game-card-logo {
-        width: 48px;
-        height: 48px;
+        width: 56px;
+        height: 56px;
     }
     
     .game-card-score {
@@ -633,4 +648,5 @@ body {
 ::-webkit-scrollbar-thumb:hover {
     background: var(--text-muted);
 }
+
 
