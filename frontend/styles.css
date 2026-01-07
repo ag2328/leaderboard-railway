@@ -263,263 +263,260 @@ body {
     }
 }
 
-/* Schedule */
+/* Schedule - Apple Sports Style */
 .schedule-container {
-    display: grid;
-    grid-template-rows: auto;
     overflow: hidden;
-    border: 1px solid var(--border);
     background: none;
     margin-bottom: 32px;
     min-width: 320px;
     font-family: 'Outfit', sans-serif;
 }
 
-.schedule-header {
-    display: grid;
-    grid-template-columns: 4em 8em 1fr 1fr 1fr;
-    align-items: center;
-    padding: 0.5em 1em;
-    background: var(--surface-2);
-    font-weight: 700;
-    font-size: 1em;
+.schedule-date-section {
+    margin-bottom: var(--spacing-lg);
+}
+
+.schedule-date-section:last-child {
+    margin-bottom: 0;
+}
+
+.schedule-date-header {
+    font-size: 0.9rem;
+    font-weight: 600;
     color: var(--text-secondary);
-    border-bottom: 1px solid var(--border);
+    margin-bottom: var(--spacing-md);
     text-transform: uppercase;
-    border-radius: 12px 12px 0 0;
+    letter-spacing: 0.5px;
 }
 
-.schedule-header > div {
-    padding: 4px;
-}
-
-/* Left align Week, Date, and Vs. columns */
-.schedule-header > div:nth-child(1),
-.schedule-header > div:nth-child(2),
-.schedule-header > div:nth-child(3) {
-    text-align: left;
-}
-
-/* Center Score and W/L columns */
-.schedule-header > div:nth-child(4),
-.schedule-header > div:nth-child(5),
-.schedule-row > div:nth-child(4),
-.schedule-row > div:nth-child(5) {
-    text-align: center;
-}
-
-.schedule-row {
-    display: grid;
-    grid-template-columns: 4em 8em 1fr 1fr 1fr;
-    align-items: center;
-    padding: 0.5em 1em;
-    border-bottom: 1px solid var(--border);
-    font-size: 1em;
-}
-
-.schedule-row > div {
-    padding: 4px;
-}
-
-/* Left align Week, Date, and Vs. columns */
-.schedule-row > div:nth-child(1),
-.schedule-row > div:nth-child(2),
-.schedule-row > div:nth-child(3) {
-    text-align: left;
-}
-
-.schedule-week {
-    font-weight: 600;
-}
-
-.schedule-date {
-    color: var(--text-secondary);
-}
-
-.schedule-opponent {
+.schedule-game-row {
     display: flex;
     align-items: center;
-    gap: 0.5em;
-    min-height: 24px;
-}
-
-.schedule-opponent .team-logo {
-    width: 24px;
-    height: 24px;
-    object-fit: contain;
-    flex-shrink: 0;
-    display: block;
-}
-
-.schedule-opponent span {
-    display: inline-block;
-    vertical-align: middle;
-    line-height: 24px;
-}
-
-.schedule-score {
-    font-weight: 600;
-}
-
-.schedule-result {
-    font-weight: 600;
-    text-align: center;
-}
-
-.schedule-row.future-game {
-    color: var(--text-secondary);
-}
-
-.schedule-row.future-game .schedule-score {
-    font-style: italic;
-}
-
-/* Goalie stats row (appears below schedule row for completed games) */
-.schedule-goalie-stats {
-    display: flex;
-    gap: var(--spacing-md);
-    padding: 0.5em 1em 0.5em 13em; /* Align with schedule row content (WK + DATE + margin) */
-    border-bottom: 1px solid var(--border);
-    font-size: 0.85em;
-    color: var(--text-secondary);
+    justify-content: space-between;
+    padding: var(--spacing-md);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-sm);
     background: var(--surface-1);
+    gap: var(--spacing-md);
 }
 
-.goalie-stat {
+.schedule-game-row:last-child {
+    margin-bottom: 0;
+}
+
+.schedule-game-teams {
     display: flex;
     align-items: center;
-    gap: 0.5em;
     flex: 1;
+    gap: var(--spacing-md);
 }
 
-.goalie-stat .team-logo-small {
-    width: 18px;
-    height: 18px;
+.schedule-game-team {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    gap: var(--spacing-xs);
+}
+
+.schedule-game-team.winner .schedule-team-name {
+    font-weight: 700;
+    color: var(--accent-success);
+}
+
+.schedule-team-logo {
+    width: 40px;
+    height: 40px;
     object-fit: contain;
     flex-shrink: 0;
 }
 
-.goalie-stat .goalie-name {
-    font-weight: 500;
+.schedule-team-name {
+    font-size: 0.95rem;
+    font-weight: 600;
     color: var(--text-primary);
-    min-width: 5em;
+    text-align: center;
 }
 
-.goalie-stat .goalie-stats {
+.schedule-team-score {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+    margin-top: var(--spacing-xs);
+}
+
+.schedule-game-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 60px;
+}
+
+.schedule-game-time {
+    font-size: 0.9rem;
     font-weight: 600;
     color: var(--text-secondary);
+}
+
+.schedule-final-status {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.schedule-result-badge {
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: var(--radius-sm);
+    text-align: center;
+    min-width: 32px;
+}
+
+.schedule-result-badge.w {
+    background: rgba(52, 199, 89, 0.2);
+    color: var(--accent-success);
+}
+
+.schedule-result-badge.l {
+    background: rgba(255, 69, 58, 0.2);
+    color: var(--accent-danger);
+}
+
+.schedule-result-badge.t {
+    background: var(--surface-2);
+    color: var(--text-secondary);
+}
+
+.schedule-game-row.upcoming .schedule-game-team {
+    opacity: 0.85;
 }
 
 @media (max-width: 480px) {
-    .schedule-header, .schedule-row {
-        padding: 0.5em 0.75em;
-        font-size: 0.875em;
-        grid-template-columns: 0.5fr 0.8fr 1.2fr 0.8fr 0.5fr;
+    .schedule-game-row {
+        padding: var(--spacing-sm);
+        gap: var(--spacing-sm);
     }
 
-    .schedule-opponent .team-logo {
-        width: 20px;
-        height: 20px;
+    .schedule-team-logo {
+        width: 32px;
+        height: 32px;
     }
 
-    .schedule-week {
-        font-size: 0.875em;
+    .schedule-team-name {
+        font-size: 0.85rem;
     }
 
-    .schedule-result {
-        padding: 0.2em 0.4em;
-        min-width: 20px;
+    .schedule-team-score {
+        font-size: 1.25rem;
     }
 
-    .schedule-goalie-stats {
-        padding-left: 0.5em;
-        font-size: 0.75em;
-        flex-direction: column;
-        gap: 0.25em;
+    .schedule-game-time {
+        font-size: 0.8rem;
     }
 
-    .goalie-stat .goalie-name {
-        min-width: 4em;
+    .schedule-result-badge {
+        font-size: 0.75rem;
+        padding: 3px 8px;
+        min-width: 28px;
     }
 }
 
-/* Game Summary Cards */
+/* Game Summary Cards - Apple Sports Style */
 .game-card {
     background: var(--surface-1);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
-    padding: var(--spacing-md);
+    padding: var(--spacing-lg);
     margin-bottom: var(--spacing-md);
 }
 
-.game-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--spacing-sm);
-    padding-bottom: var(--spacing-sm);
-    border-bottom: 1px solid var(--border);
-}
-
-.game-date {
+.game-card-date {
     font-size: 0.85rem;
     color: var(--text-muted);
     font-weight: 500;
+    margin-bottom: var(--spacing-md);
+    text-align: center;
 }
 
-.game-outcome {
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    padding: 2px 8px;
-    border-radius: var(--radius-sm);
-    background: var(--surface-2);
-    color: var(--text-secondary);
-}
-
-.game-outcome.ot {
-    background: rgba(255, 159, 10, 0.2);
-    color: var(--accent-warning);
-}
-
-.game-outcome.so {
-    background: rgba(126, 192, 238, 0.2);
-    color: var(--accent);
-}
-
-.game-teams {
+.game-card-scoreboard {
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--spacing-sm);
+    gap: var(--spacing-md);
 }
 
-.game-team {
+.game-card-team-section {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: var(--spacing-sm);
     flex: 1;
+    gap: var(--spacing-sm);
 }
 
-.game-team.winner {
-    font-weight: 700;
+.game-card-team-section.winner .game-card-score {
+    color: var(--accent-success);
+    font-weight: 800;
 }
 
-.game-score {
-    font-size: 1.5rem;
+.game-card-logo {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.game-card-team-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: center;
+}
+
+.game-card-score {
+    font-size: 3rem;
     font-weight: 700;
     color: var(--text-primary);
-    margin: 0 var(--spacing-md);
+    line-height: 1;
+    margin-top: var(--spacing-xs);
 }
 
-.game-shots {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    margin-top: var(--spacing-sm);
-    padding-top: var(--spacing-sm);
-    border-top: 1px solid var(--border);
+.game-card-status {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0 var(--spacing-sm);
+    flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+    .game-card {
+        padding: var(--spacing-md);
+    }
+    
+    .game-card-logo {
+        width: 48px;
+        height: 48px;
+    }
+    
+    .game-card-score {
+        font-size: 2.5rem;
+    }
+    
+    .game-card-team-name {
+        font-size: 0.85rem;
+    }
+    
+    .game-card-status {
+        font-size: 0.7rem;
+    }
 }
 
 /* Player Stats */
