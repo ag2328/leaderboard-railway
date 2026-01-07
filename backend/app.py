@@ -14,7 +14,7 @@ And admin endpoints for:
 """
 
 import os
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from models import (
     get_active_season, get_season_by_name,
@@ -33,7 +33,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-app = Flask(__name__)
+# Configure Flask to serve frontend static files
+# Get the path to the frontend directory (one level up from backend)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+FRONTEND_DIR = os.path.join(BASE_DIR, 'frontend')
+
+app = Flask(__name__, 
+            static_folder=FRONTEND_DIR,
+            static_url_path='')
 CORS(app)  # Enable CORS for frontend
 
 # Add request logging middleware (only log in debug mode to reduce noise)
@@ -66,8 +73,12 @@ def get_season_from_request():
 
 @app.route('/', methods=['GET'])
 def root():
-    """Root endpoint for Railway health checks."""
-    print("ROOT ENDPOINT HIT!", flush=True)  # Debug: confirm requests reach app
+    """Serve the frontend index.html."""
+    return send_from_directory(FRONTEND_DIR, 'index.html')
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    """Health check endpoint for Railway (separate from frontend)."""
     return jsonify({
         'status': 'ok',
         'service': 'leaderboard-api',
@@ -369,7 +380,12 @@ def recalculate_stats():
 
 @app.errorhandler(404)
 def not_found(error):
-    return jsonify({'error': 'Not found'}), 404
+    """Handle 404s - if it's an API route, return JSON error, otherwise serve frontend."""
+    # If it's an API route, return JSON error
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'Not found'}), 404
+    # Otherwise, serve the frontend (for client-side routing)
+    return send_from_directory(FRONTEND_DIR, 'index.html')
 
 
 @app.errorhandler(500)
