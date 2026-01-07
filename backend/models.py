@@ -219,16 +219,27 @@ def get_pending_games(season_id):
 # ============================================================================
 
 def get_team_standings(season_id):
-    """Get team standings for a season."""
+    """Get team standings for a season. Returns all teams, with zero values for teams without standings."""
     conn = get_db_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
+    
+    # Get all teams with their standings (if they exist), or zero values if they don't
     cursor.execute("""
-        SELECT ts.*,
-               t.name as team_name
-        FROM team_standings ts
-        JOIN teams t ON ts.team_id = t.id
-        WHERE ts.season_id = %s
-        ORDER BY ts.points DESC, ts.wins DESC, ts.goals_scored DESC
+        SELECT 
+            t.id as team_id,
+            t.name as team_name,
+            COALESCE(ts.games_played, 0) as games_played,
+            COALESCE(ts.wins, 0) as wins,
+            COALESCE(ts.losses, 0) as losses,
+            COALESCE(ts.ties, 0) as ties,
+            COALESCE(ts.tiebreaker_wins, 0) as tiebreaker_wins,
+            COALESCE(ts.tiebreaker_losses, 0) as tiebreaker_losses,
+            COALESCE(ts.goals_scored, 0) as goals_scored,
+            COALESCE(ts.goals_against, 0) as goals_against,
+            COALESCE(ts.points, 0) as points
+        FROM teams t
+        LEFT JOIN team_standings ts ON t.id = ts.team_id AND ts.season_id = %s
+        ORDER BY COALESCE(ts.points, 0) DESC, COALESCE(ts.wins, 0) DESC, COALESCE(ts.goals_scored, 0) DESC, t.name ASC
     """, (season_id,))
     standings = cursor.fetchall()
     cursor.close()
