@@ -467,13 +467,43 @@ body {
     }
 }
 
-/* Game Summary Cards - Apple Sports Style */
+/* Game Summary Cards - Apple Sports Style with Flip */
+.game-card-container {
+    perspective: 1000px;
+    margin-bottom: var(--spacing-md);
+    cursor: pointer;
+}
+
+.game-card-flipper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+}
+
+.game-card-flipper.flipped {
+    transform: rotateY(180deg);
+}
+
+.game-card-front,
+.game-card-back {
+    position: absolute;
+    width: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.game-card-back {
+    transform: rotateY(180deg);
+}
+
 .game-card {
     background: var(--surface-1);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     padding: var(--spacing-lg);
-    margin-bottom: var(--spacing-md);
+    min-height: 200px;
 }
 
 .game-card-date {
@@ -538,9 +568,103 @@ body {
     flex-shrink: 0;
 }
 
+/* Game Card Back Side */
+.game-card-back-content {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    min-height: 200px;
+}
+
+.game-card-back-loading,
+.game-card-back-error {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: var(--spacing-xl);
+}
+
+.game-card-stats-section {
+    margin-bottom: var(--spacing-lg);
+}
+
+.game-card-stats-section:last-child {
+    margin-bottom: 0;
+}
+
+.game-card-stats-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-sm);
+    text-align: center;
+}
+
+.game-card-stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface-2);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.game-card-stats-table th {
+    background: var(--surface-3);
+    padding: var(--spacing-sm);
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    text-align: center;
+    border-bottom: 2px solid var(--border);
+}
+
+.game-card-stats-table td {
+    padding: var(--spacing-sm);
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+}
+
+.game-card-stats-table .team-cell {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    text-align: left;
+    font-weight: 700;
+}
+
+.game-card-stats-table .team-logo-small {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.game-card-stats-table .team-abbrev {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.game-card-stats-table .total-cell {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.game-card-stats-table .total-row {
+    background: var(--surface-1);
+    border-top: 2px solid var(--border);
+}
+
+.game-card-stats-table .total-row td {
+    font-weight: 700;
+}
+
 @media (max-width: 480px) {
-    .game-card {
+    .game-card,
+    .game-card-back-content {
         padding: var(--spacing-md);
+        min-height: 180px;
     }
     
     .game-card-logo {
@@ -558,6 +682,20 @@ body {
     
     .game-card-status {
         font-size: 0.7rem;
+    }
+    
+    .game-card-stats-table {
+        font-size: 0.8rem;
+    }
+    
+    .game-card-stats-table th,
+    .game-card-stats-table td {
+        padding: 0.5rem 0.25rem;
+    }
+    
+    .game-card-stats-table .team-logo-small {
+        width: 20px;
+        height: 20px;
     }
 }
 

@@ -5,7 +5,7 @@
  */
 
 import { loadStandings } from './standings.js';
-import { loadTeamGames } from './game-cards.js';
+import { loadTeamGames, initGameCards } from './game-cards.js';
 import { loadPlayerStats } from './player-stats.js';
 import { fetchTeams } from './api-client.js';
 import { slugToTeamName, getTeamLogoPath } from './utils.js';
@@ -38,6 +38,9 @@ async function init() {
         
         // Handle initial hash
         await handleHashChange();
+        
+        // Initialize game card interactions
+        initGameCards();
         
         // Set up back button
         if (backToStandingsLink) {

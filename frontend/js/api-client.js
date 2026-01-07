@@ -135,6 +135,26 @@ export async function fetchGameGoalies(gameId) {
 }
 
 /**
+ * Fetch period-by-period stats for a specific game
+ */
+export async function fetchGamePeriodStats(gameId) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/games/${gameId}/periods`);
+        if (!response.ok) {
+            if (response.status === 404) {
+                return null;
+            }
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error fetching game period stats:', error);
+        return null;
+    }
+}
+
+/**
  * Health check
  */
 export async function healthCheck() {

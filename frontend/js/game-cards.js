@@ -4,12 +4,12 @@
  * Handles display of game summary cards and team schedules.
  */
 
-import { fetchTeamGames, fetchGameGoalies } from './api-client.js';
+import { fetchTeamGames, fetchGameGoalies, fetchGamePeriodStats } from './api-client.js';
 import { formatDate, formatGameOutcome, getGameOutcomeType, displayError, displayLoading } from './utils.js';
 import { getTeamLogoPath } from './utils.js';
 
 /**
- * Render a single game card (Apple Sports style)
+ * Render a single game card (Apple Sports style) with flip functionality
  */
 export function renderGameCard(game, teamName) {
     const summary = game.summary;
@@ -33,26 +33,183 @@ export function renderGameCard(game, teamName) {
         finalStatus = 'Final SO';
     }
 
+    const homeTeam = game.home_team_name;
+    const awayTeam = game.away_team_name;
+    const homeTeamId = game.home_team_id;
+    const awayTeamId = game.away_team_id;
+
     return `
-        <div class="game-card">
-            <div class="game-card-date">${formatDate(game.game_date)}</div>
-            <div class="game-card-scoreboard">
-                <div class="game-card-team-section ${isWinner ? 'winner' : ''}">
-                    <img src="${getTeamLogoPath(teamName)}" alt="${teamName}" 
-                         class="game-card-logo" onerror="this.style.display='none'">
-                    <div class="game-card-team-name">${teamName}</div>
-                    <div class="game-card-score">${teamScore}</div>
+        <div class="game-card-container" data-game-id="${game.id}">
+            <div class="game-card-flipper">
+                <div class="game-card-front">
+                    <div class="game-card-date">${formatDate(game.game_date)}</div>
+                    <div class="game-card-scoreboard">
+                        <div class="game-card-team-section ${isWinner ? 'winner' : ''}">
+                            <img src="${getTeamLogoPath(teamName)}" alt="${teamName}" 
+                                 class="game-card-logo" onerror="this.style.display='none'">
+                            <div class="game-card-team-name">${teamName}</div>
+                            <div class="game-card-score">${teamScore}</div>
+                        </div>
+                        <div class="game-card-status">${finalStatus}</div>
+                        <div class="game-card-team-section ${!isWinner && summary.game_outcome !== 'tie' ? 'winner' : ''}">
+                            <img src="${getTeamLogoPath(opponent)}" alt="${opponent}" 
+                                 class="game-card-logo" onerror="this.style.display='none'">
+                            <div class="game-card-team-name">${opponent}</div>
+                            <div class="game-card-score">${opponentScore}</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="game-card-status">${finalStatus}</div>
-                <div class="game-card-team-section ${!isWinner && summary.game_outcome !== 'tie' ? 'winner' : ''}">
-                    <img src="${getTeamLogoPath(opponent)}" alt="${opponent}" 
-                         class="game-card-logo" onerror="this.style.display='none'">
-                    <div class="game-card-team-name">${opponent}</div>
-                    <div class="game-card-score">${opponentScore}</div>
+                <div class="game-card-back">
+                    <div class="game-card-back-content" data-home-team="${homeTeamId}" data-away-team="${awayTeamId}" 
+                         data-home-name="${homeTeam}" data-away-name="${awayTeam}">
+                        <div class="game-card-back-loading">Loading stats...</div>
+                    </div>
                 </div>
             </div>
         </div>
     `;
+}
+
+/**
+ * Handle game card click to flip
+ */
+function handleGameCardClick(cardContainer) {
+    const flipper = cardContainer.querySelector('.game-card-flipper');
+    const gameId = cardContainer.dataset.gameId;
+    
+    if (!flipper || !gameId) return;
+    
+    // Toggle flip class
+    flipper.classList.toggle('flipped');
+    
+    // If flipping to back, load stats
+    if (flipper.classList.contains('flipped')) {
+        const backContent = cardContainer.querySelector('.game-card-back-content');
+        if (backContent && !backContent.dataset.loaded) {
+            loadGameStats(gameId, backContent);
+            backContent.dataset.loaded = 'true';
+        }
+    }
+}
+
+/**
+ * Load and render game stats on the back of the card
+ */
+async function loadGameStats(gameId, container) {
+    const homeTeam = container.dataset.homeName;
+    const awayTeam = container.dataset.awayName;
+    
+    try {
+        const stats = await fetchGamePeriodStats(gameId);
+        
+        if (!stats) {
+            container.innerHTML = '<div class="game-card-back-error">Stats not available</div>';
+            return;
+        }
+        
+        // Render period scores table
+        let scoresHtml = `
+            <div class="game-card-stats-section">
+                <table class="game-card-stats-table">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            ${stats.periods.map(p => `<th>${getPeriodLabel(p)}</th>`).join('')}
+                            <th>T</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="team-cell">
+                                <img src="${getTeamLogoPath(homeTeam)}" alt="${homeTeam}" 
+                                     class="team-logo-small" onerror="this.style.display='none'">
+                                <span class="team-abbrev">${getTeamAbbreviation(homeTeam)}</span>
+                            </td>
+                            ${stats.goals.home.map(goals => `<td>${goals}</td>`).join('')}
+                            <td class="total-cell">${stats.totals.goals.home}</td>
+                        </tr>
+                        <tr>
+                            <td class="team-cell">
+                                <img src="${getTeamLogoPath(awayTeam)}" alt="${awayTeam}" 
+                                     class="team-logo-small" onerror="this.style.display='none'">
+                                <span class="team-abbrev">${getTeamAbbreviation(awayTeam)}</span>
+                            </td>
+                            ${stats.goals.away.map(goals => `<td>${goals}</td>`).join('')}
+                            <td class="total-cell">${stats.totals.goals.away}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        // Render shots on goal table
+        scoresHtml += `
+            <div class="game-card-stats-section">
+                <h3 class="game-card-stats-title">Shots On Goal</h3>
+                <table class="game-card-stats-table">
+                    <thead>
+                        <tr>
+                            <th>Period</th>
+                            <th>${getTeamAbbreviation(homeTeam)}</th>
+                            <th>${getTeamAbbreviation(awayTeam)}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${stats.periods.map((period, idx) => `
+                            <tr>
+                                <td>${getPeriodLabel(period)}</td>
+                                <td>${stats.shots.home[idx] || 0}</td>
+                                <td>${stats.shots.away[idx] || 0}</td>
+                            </tr>
+                        `).join('')}
+                        <tr class="total-row">
+                            <td>Total</td>
+                            <td class="total-cell">${stats.totals.shots.home}</td>
+                            <td class="total-cell">${stats.totals.shots.away}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        container.innerHTML = scoresHtml;
+    } catch (error) {
+        console.error('Error loading game stats:', error);
+        container.innerHTML = '<div class="game-card-back-error">Failed to load stats</div>';
+    }
+}
+
+/**
+ * Get period label (1st, 2nd, 3rd, etc.)
+ */
+function getPeriodLabel(period) {
+    const labels = ['1st', '2nd', '3rd', '4th', '5th'];
+    return labels[period - 1] || `${period}th`;
+}
+
+/**
+ * Get team abbreviation from full name
+ */
+function getTeamAbbreviation(teamName) {
+    const abbreviations = {
+        'Bruins': 'BRU',
+        'Canadiens': 'MON',
+        'Maple Leafs': 'TOR',
+        'Red Wings': 'DET'
+    };
+    return abbreviations[teamName] || teamName.substring(0, 3).toUpperCase();
+}
+
+/**
+ * Initialize game card interactions after rendering
+ */
+export function initGameCards() {
+    document.addEventListener('click', (e) => {
+        const cardContainer = e.target.closest('.game-card-container');
+        if (cardContainer) {
+            handleGameCardClick(cardContainer);
+        }
+    });
 }
 
 /**

@@ -14,6 +14,7 @@ And admin endpoints for:
 """
 
 import os
+from datetime import datetime, date
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from models import (
@@ -21,7 +22,8 @@ from models import (
     get_all_teams, get_team_by_id,
     get_team_standings, get_team_standing,
     get_team_games, get_game_by_id, get_game_summary,
-    get_team_players, get_team_goalie, get_game_goalie_stats
+    get_team_players, get_team_goalie, get_game_goalie_stats,
+    get_game_period_stats
 )
 from sync_service import (
     process_pending_games,
@@ -42,6 +44,17 @@ app = Flask(__name__,
             static_folder=FRONTEND_DIR,
             static_url_path='')
 CORS(app)  # Enable CORS for frontend
+
+# Custom JSON encoder to handle datetime/date objects
+def convert_datetime_to_iso(obj):
+    """Recursively convert datetime/date objects to ISO format strings."""
+    if isinstance(obj, (datetime, date)):
+        return obj.isoformat()
+    elif isinstance(obj, dict):
+        return {k: convert_datetime_to_iso(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_datetime_to_iso(item) for item in obj]
+    return obj
 
 # Add request logging middleware (only log in debug mode to reduce noise)
 @app.before_request
@@ -258,9 +271,9 @@ def get_team_games_endpoint(team_id):
     games_with_summaries = []
     for game in games:
         summary = get_game_summary(game['id'])
-        game_data = dict(game)
+        game_data = convert_datetime_to_iso(dict(game))
         if summary:
-            game_data['summary'] = dict(summary)
+            game_data['summary'] = convert_datetime_to_iso(dict(summary))
         games_with_summaries.append(game_data)
     
     return jsonify({
@@ -334,6 +347,15 @@ def get_game_goalies_endpoint(game_id):
     if not goalies:
         return jsonify({'goalies': []}), 200
     return jsonify({'goalies': goalies})
+
+
+@app.route('/api/games/<int:game_id>/periods', methods=['GET'])
+def get_game_periods_endpoint(game_id):
+    """Get period-by-period stats for a game."""
+    period_stats = get_game_period_stats(game_id)
+    if not period_stats:
+        return jsonify({'error': 'Game not found or no stats available'}), 404
+    return jsonify(period_stats)
 
 
 # ============================================================================

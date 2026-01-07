@@ -358,6 +358,94 @@ def count_goals_by_team(game_id, team_id):
     return count
 
 
+def get_game_period_stats(game_id):
+    """
+    Get period-by-period stats (goals and shots) for a game.
+    
+    Returns a dict with:
+    - goals: {home: [period1, period2, ...], away: [period1, period2, ...]}
+    - shots: {home: [period1, period2, ...], away: [period1, period2, ...]}
+    - periods: list of period numbers
+    """
+    # Get game info
+    game = get_game_by_id(game_id)
+    if not game:
+        return None
+    
+    home_team_id = game['home_team_id']
+    away_team_id = game['away_team_id']
+    
+    # Get all events for this game
+    events = get_game_events(game_id)
+    
+    # Count goals by period and team
+    goals = {'home': {}, 'away': {}}
+    max_period = 3
+    
+    for event in events:
+        if event['event_type'] == 'goal' and event.get('player_team_id'):
+            period = event.get('period', 1)
+            max_period = max(max_period, period)
+            
+            if event['player_team_id'] == home_team_id:
+                goals['home'][period] = goals['home'].get(period, 0) + 1
+            elif event['player_team_id'] == away_team_id:
+                goals['away'][period] = goals['away'].get(period, 0) + 1
+    
+    # Convert to arrays (periods 1, 2, 3, etc.)
+    goals_home = [goals['home'].get(i, 0) for i in range(1, max_period + 1)]
+    goals_away = [goals['away'].get(i, 0) for i in range(1, max_period + 1)]
+    
+    # For shots, we'll use the summary data
+    # Since we don't track shots by period, we'll distribute evenly
+    summary = get_game_summary(game_id)
+    shots_home = []
+    shots_away = []
+    
+    if summary:
+        total_shots_home = summary.get('home_team_shots', 0)
+        total_shots_away = summary.get('away_team_shots', 0)
+        
+        # Distribute shots evenly across periods (rounded)
+        if max_period > 0:
+            base_home = total_shots_home // max_period
+            base_away = total_shots_away // max_period
+            remainder_home = total_shots_home % max_period
+            remainder_away = total_shots_away % max_period
+            
+            for i in range(max_period):
+                shots_home.append(base_home + (1 if i < remainder_home else 0))
+                shots_away.append(base_away + (1 if i < remainder_away else 0))
+        else:
+            shots_home = [0]
+            shots_away = [0]
+    else:
+        shots_home = [0] * max_period
+        shots_away = [0] * max_period
+    
+    return {
+        'periods': list(range(1, max_period + 1)),
+        'goals': {
+            'home': goals_home,
+            'away': goals_away
+        },
+        'shots': {
+            'home': shots_home,
+            'away': shots_away
+        },
+        'totals': {
+            'goals': {
+                'home': sum(goals_home),
+                'away': sum(goals_away)
+            },
+            'shots': {
+                'home': sum(shots_home) if summary else 0,
+                'away': sum(shots_away) if summary else 0
+            }
+        }
+    }
+
+
 def get_game_goalie_stats(game_id):
     """
     Get goalie stats for a specific game.
