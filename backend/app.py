@@ -84,15 +84,18 @@ def get_season_from_request():
 
 @app.route('/', methods=['GET'])
 def root():
-    """Root endpoint for Railway health checks."""
+    """Root endpoint for Railway health checks - must be fast and simple."""
     import sys
-    print(f"[Request] GET / - Health check from Railway", flush=True)
+    sys.stdout.write(f"[Request] GET / - Health check\n")
     sys.stdout.flush()
-    return jsonify({
+    # Return immediately without any processing
+    response = jsonify({
         'status': 'ok',
         'service': 'leaderboard-api',
         'version': '1.0.0'
-    }), 200
+    })
+    response.headers['Content-Type'] = 'application/json'
+    return response, 200
 
 @app.route('/api/health', methods=['GET'])
 def health():
