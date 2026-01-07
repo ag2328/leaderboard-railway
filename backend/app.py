@@ -74,12 +74,6 @@ def root():
         'version': '1.0.0'
     }), 200
 
-@app.route('/health', methods=['GET'])
-def health():
-    """Health check endpoint for Railway."""
-    print("HEALTH ENDPOINT HIT!", flush=True)
-    return jsonify({'status': 'ok'}), 200
-
 @app.route('/api/health', methods=['GET'])
 def health():
     """Health check endpoint with database connection test."""
