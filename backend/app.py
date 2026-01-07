@@ -40,8 +40,14 @@ CORS(app)  # Enable CORS for frontend
 @app.before_request
 def log_request_info():
     import sys
-    print(f"[Request] {request.method} {request.path}", flush=True)
+    print(f"[Request] {request.method} {request.path} from {request.remote_addr}", flush=True)
     sys.stdout.flush()
+
+# Ensure app is ready - add a simple test
+@app.route('/ready', methods=['GET'])
+def ready():
+    """Readiness check endpoint."""
+    return jsonify({'ready': True}), 200
 
 # Configuration
 CURRENT_SEASON = os.getenv('CURRENT_SEASON', 'Spring 2026')
