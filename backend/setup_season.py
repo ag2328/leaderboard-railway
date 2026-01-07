@@ -32,7 +32,7 @@ def create_season():
         existing = cursor.fetchone()
         
         if existing:
-            print(f"✓ Season '{CURRENT_SEASON}' already exists (ID: {existing[0]})")
+            print(f"[OK] Season '{CURRENT_SEASON}' already exists (ID: {existing[0]})")
             cursor.close()
             conn.close()
             return
@@ -51,7 +51,7 @@ def create_season():
         conn.commit()
         
         print("=" * 60)
-        print(f"✓ Created season: {CURRENT_SEASON}")
+        print(f"[OK] Created season: {CURRENT_SEASON}")
         print(f"  Season ID: {season_id}")
         print(f"  Start Date: {start_date}")
         print(f"  Active: True")

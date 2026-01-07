@@ -44,18 +44,45 @@ def run_migration(conn, migration_file):
         cursor.execute(sql)
         conn.commit()
         cursor.close()
-        print(f"✓ Migration applied successfully")
+        print(f"[OK] Migration applied successfully")
         return True
     except Exception as e:
-        print(f"✗ Error applying migration: {e}")
+        print(f"[FAIL] Error applying migration: {e}")
         conn.rollback()
         return False
 
 
-def record_migration(conn, migration_file):
-    """Record that a migration has been applied."""
-    # Create schema_migrations table if it doesn't exist
+def ensure_schema_migrations_table(conn):
+    """Ensure schema_migrations table exists with correct structure."""
     cursor = conn.cursor()
+    
+    # Check if table exists
+    cursor.execute("""
+        SELECT EXISTS (
+            SELECT FROM information_schema.tables 
+            WHERE table_schema = 'public' 
+            AND table_name = 'schema_migrations'
+        )
+    """)
+    table_exists = cursor.fetchone()[0]
+    
+    if table_exists:
+        # Check if it has the right columns
+        cursor.execute("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'schema_migrations' 
+            AND column_name = 'filename'
+        """)
+        has_filename = cursor.fetchone() is not None
+        
+        if not has_filename:
+            # Drop and recreate the table
+            print("  Recreating schema_migrations table with correct structure...")
+            cursor.execute("DROP TABLE IF EXISTS schema_migrations")
+            conn.commit()
+    
+    # Create table with correct structure
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS schema_migrations (
             id SERIAL PRIMARY KEY,
@@ -64,8 +91,14 @@ def record_migration(conn, migration_file):
         )
     """)
     conn.commit()
+    cursor.close()
+
+
+def record_migration(conn, migration_file):
+    """Record that a migration has been applied."""
+    ensure_schema_migrations_table(conn)
     
-    # Record this migration
+    cursor = conn.cursor()
     filename = os.path.basename(migration_file)
     cursor.execute("""
         INSERT INTO schema_migrations (filename)
@@ -78,16 +111,9 @@ def record_migration(conn, migration_file):
 
 def get_applied_migrations(conn):
     """Get list of already applied migrations."""
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS schema_migrations (
-            id SERIAL PRIMARY KEY,
-            filename VARCHAR(255) NOT NULL UNIQUE,
-            applied_at TIMESTAMP NOT NULL DEFAULT NOW()
-        )
-    """)
-    conn.commit()
+    ensure_schema_migrations_table(conn)
     
+    cursor = conn.cursor()
     cursor.execute("SELECT filename FROM schema_migrations ORDER BY filename")
     applied = {row[0] for row in cursor.fetchall()}
     cursor.close()
@@ -105,7 +131,7 @@ def main():
         # Connect to database
         conn = psycopg2.connect(DATABASE_URL)
         conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-        print("✓ Connected to database")
+        print("[OK] Connected to database")
         print()
         
         # Get migration files
@@ -122,7 +148,7 @@ def main():
             filename = os.path.basename(migration_file)
             
             if filename in applied:
-                print(f"⊘ Skipping {filename} (already applied)")
+                print(f"[SKIP] Skipping {filename} (already applied)")
                 continue
             
             if run_migration(conn, migration_file):
@@ -133,7 +159,7 @@ def main():
             print()
         
         print("=" * 60)
-        print("All migrations completed successfully!")
+        print("[SUCCESS] All migrations completed successfully!")
         print("=" * 60)
         
         conn.close()
