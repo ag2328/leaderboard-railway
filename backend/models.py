@@ -21,6 +21,8 @@ DATABASE_URL = os.getenv('DATABASE_URL')
 
 def get_db_connection():
     """Get a database connection."""
+    if not DATABASE_URL:
+        raise ValueError("DATABASE_URL environment variable is not set")
     return psycopg2.connect(DATABASE_URL)
 
 

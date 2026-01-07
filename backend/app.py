@@ -61,20 +61,20 @@ def get_season_from_request():
 @app.route('/api/health', methods=['GET'])
 def health():
     """Health check endpoint with database connection test."""
-    from models import get_db_connection
-    
     health_status = {
         'status': 'ok',
         'database': 'unknown',
         'environment': {
             'current_season': CURRENT_SEASON,
             'auto_sync_enabled': AUTO_SYNC_ENABLED,
-            'flask_env': os.getenv('FLASK_ENV', 'not set')
+            'flask_env': os.getenv('FLASK_ENV', 'not set'),
+            'database_url_set': bool(os.getenv('DATABASE_URL'))
         }
     }
     
     # Test database connection
     try:
+        from models import get_db_connection
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute('SELECT version();')
@@ -86,6 +86,14 @@ def health():
             'status': 'connected',
             'version': db_version.split(',')[0]  # Just the PostgreSQL version
         }
+    except ValueError as e:
+        # DATABASE_URL not set
+        health_status['status'] = 'error'
+        health_status['database'] = {
+            'status': 'error',
+            'error': 'DATABASE_URL not configured: ' + str(e)
+        }
+        return jsonify(health_status), 500
     except Exception as e:
         health_status['status'] = 'error'
         health_status['database'] = {
@@ -100,8 +108,6 @@ def health():
 @app.route('/api/test-db', methods=['GET'])
 def test_database():
     """Test database connection and check for required tables."""
-    from models import get_db_connection
-    
     results = {
         'connection': 'unknown',
         'tables': {},
@@ -109,6 +115,7 @@ def test_database():
     }
     
     try:
+        from models import get_db_connection
         conn = get_db_connection()
         cursor = conn.cursor()
         
@@ -156,6 +163,12 @@ def test_database():
         
         return jsonify(results)
         
+    except ValueError as e:
+        results['connection'] = {
+            'status': 'error',
+            'error': 'DATABASE_URL not configured: ' + str(e)
+        }
+        return jsonify(results), 500
     except Exception as e:
         results['connection'] = {
             'status': 'error',
@@ -345,5 +358,12 @@ def internal_error(error):
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))
     debug = os.getenv('FLASK_DEBUG', 'false').lower() == 'true'
+    
+    print(f"Starting Flask app on port {port}")
+    print(f"Current Season: {CURRENT_SEASON}")
+    print(f"Auto Sync: {AUTO_SYNC_ENABLED}")
+    print(f"Flask Env: {os.getenv('FLASK_ENV', 'not set')}")
+    print(f"DATABASE_URL set: {bool(os.getenv('DATABASE_URL'))}")
+    
     app.run(host='0.0.0.0', port=port, debug=debug)
 
