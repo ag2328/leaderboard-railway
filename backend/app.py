@@ -36,6 +36,13 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend
 
+# Add request logging middleware
+@app.before_request
+def log_request_info():
+    import sys
+    print(f"[Request] {request.method} {request.path}", flush=True)
+    sys.stdout.flush()
+
 # Configuration
 CURRENT_SEASON = os.getenv('CURRENT_SEASON', 'Spring 2026')
 AUTO_SYNC_ENABLED = os.getenv('AUTO_SYNC_ENABLED', 'false').lower() == 'true'
@@ -78,6 +85,9 @@ def get_season_from_request():
 @app.route('/', methods=['GET'])
 def root():
     """Root endpoint for Railway health checks."""
+    import sys
+    print(f"[Request] GET / - Health check from Railway", flush=True)
+    sys.stdout.flush()
     return jsonify({
         'status': 'ok',
         'service': 'leaderboard-api',
