@@ -40,6 +40,12 @@ CORS(app)  # Enable CORS for frontend
 CURRENT_SEASON = os.getenv('CURRENT_SEASON', 'Spring 2026')
 AUTO_SYNC_ENABLED = os.getenv('AUTO_SYNC_ENABLED', 'false').lower() == 'true'
 
+# Log startup info (for gunicorn workers)
+print(f"[App Startup] Flask app initialized")
+print(f"[App Startup] Current Season: {CURRENT_SEASON}")
+print(f"[App Startup] Auto Sync: {AUTO_SYNC_ENABLED}")
+print(f"[App Startup] DATABASE_URL set: {bool(os.getenv('DATABASE_URL'))}")
+
 
 # ============================================================================
 # Helper Functions
@@ -61,48 +67,58 @@ def get_season_from_request():
 @app.route('/api/health', methods=['GET'])
 def health():
     """Health check endpoint with database connection test."""
-    health_status = {
-        'status': 'ok',
-        'database': 'unknown',
-        'environment': {
-            'current_season': CURRENT_SEASON,
-            'auto_sync_enabled': AUTO_SYNC_ENABLED,
-            'flask_env': os.getenv('FLASK_ENV', 'not set'),
-            'database_url_set': bool(os.getenv('DATABASE_URL'))
-        }
-    }
-    
-    # Test database connection
     try:
-        from models import get_db_connection
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute('SELECT version();')
-        db_version = cursor.fetchone()[0]
-        cursor.close()
-        conn.close()
+        health_status = {
+            'status': 'ok',
+            'database': 'unknown',
+            'environment': {
+                'current_season': CURRENT_SEASON,
+                'auto_sync_enabled': AUTO_SYNC_ENABLED,
+                'flask_env': os.getenv('FLASK_ENV', 'not set'),
+                'database_url_set': bool(os.getenv('DATABASE_URL'))
+            }
+        }
         
-        health_status['database'] = {
-            'status': 'connected',
-            'version': db_version.split(',')[0]  # Just the PostgreSQL version
-        }
-    except ValueError as e:
-        # DATABASE_URL not set
-        health_status['status'] = 'error'
-        health_status['database'] = {
-            'status': 'error',
-            'error': 'DATABASE_URL not configured: ' + str(e)
-        }
-        return jsonify(health_status), 500
+        # Test database connection
+        try:
+            from models import get_db_connection
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute('SELECT version();')
+            db_version = cursor.fetchone()[0]
+            cursor.close()
+            conn.close()
+            
+            health_status['database'] = {
+                'status': 'connected',
+                'version': db_version.split(',')[0]  # Just the PostgreSQL version
+            }
+        except ValueError as e:
+            # DATABASE_URL not set
+            health_status['status'] = 'error'
+            health_status['database'] = {
+                'status': 'error',
+                'error': 'DATABASE_URL not configured: ' + str(e)
+            }
+            return jsonify(health_status), 500
+        except Exception as e:
+            health_status['status'] = 'error'
+            health_status['database'] = {
+                'status': 'error',
+                'error': str(e)
+            }
+            return jsonify(health_status), 500
+        
+        return jsonify(health_status)
     except Exception as e:
-        health_status['status'] = 'error'
-        health_status['database'] = {
+        # Catch any other errors in the outer try block
+        import traceback
+        print(f"[Health Endpoint Error] {str(e)}")
+        print(traceback.format_exc())
+        return jsonify({
             'status': 'error',
             'error': str(e)
-        }
-        return jsonify(health_status), 500
-    
-    return jsonify(health_status)
+        }), 500
 
 
 @app.route('/api/test-db', methods=['GET'])
