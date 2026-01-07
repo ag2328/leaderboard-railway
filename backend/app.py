@@ -75,6 +75,15 @@ def get_season_from_request():
 # Public API Endpoints
 # ============================================================================
 
+@app.route('/', methods=['GET'])
+def root():
+    """Root endpoint for Railway health checks."""
+    return jsonify({
+        'status': 'ok',
+        'service': 'leaderboard-api',
+        'version': '1.0.0'
+    }), 200
+
 @app.route('/api/health', methods=['GET'])
 def health():
     """Health check endpoint with database connection test."""
