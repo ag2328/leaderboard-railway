@@ -46,6 +46,17 @@ print(f"[App Startup] Current Season: {CURRENT_SEASON}")
 print(f"[App Startup] Auto Sync: {AUTO_SYNC_ENABLED}")
 print(f"[App Startup] DATABASE_URL set: {bool(os.getenv('DATABASE_URL'))}")
 
+# Test database connection on startup
+try:
+    from models import get_db_connection
+    test_conn = get_db_connection()
+    test_conn.close()
+    print(f"[App Startup] Database connection test: SUCCESS")
+except Exception as e:
+    print(f"[App Startup] Database connection test: FAILED - {str(e)}")
+    import traceback
+    traceback.print_exc()
+
 
 # ============================================================================
 # Helper Functions
