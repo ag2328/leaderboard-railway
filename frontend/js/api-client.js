@@ -115,6 +115,26 @@ export async function fetchGame(gameId) {
 }
 
 /**
+ * Fetch goalie stats for a specific game
+ */
+export async function fetchGameGoalies(gameId) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/games/${gameId}/goalies`);
+        if (!response.ok) {
+            if (response.status === 404) {
+                return []; // No goalies found
+            }
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data.goalies || [];
+    } catch (error) {
+        console.error('Error fetching game goalies:', error);
+        return [];
+    }
+}
+
+/**
  * Health check
  */
 export async function healthCheck() {

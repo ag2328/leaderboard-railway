@@ -4,7 +4,7 @@
  * Handles display of game summary cards and team schedules.
  */
 
-import { fetchTeamGames } from './api-client.js';
+import { fetchTeamGames, fetchGameGoalies } from './api-client.js';
 import { formatDate, formatGameOutcome, getGameOutcomeType, displayError, displayLoading } from './utils.js';
 import { getTeamLogoPath } from './utils.js';
 
@@ -76,7 +76,7 @@ export function renderGameCard(game, teamName) {
 /**
  * Render team schedule as a table
  */
-export function renderTeamSchedule(games, teamName, container) {
+export async function renderTeamSchedule(games, teamName, container) {
     if (!games || games.length === 0) {
         displayError(container, 'No schedule data available');
         return;
@@ -91,6 +91,14 @@ export function renderTeamSchedule(games, teamName, container) {
             <div>W/L</div>
         </div>
     `;
+
+    // Fetch goalie stats for all completed games in parallel
+    const goalieStatsPromises = games
+        .filter(game => game.summary)
+        .map(game => fetchGameGoalies(game.id).then(goalies => ({ gameId: game.id, goalies })));
+    
+    const goalieStatsResults = await Promise.all(goalieStatsPromises);
+    const goalieStatsMap = new Map(goalieStatsResults.map(r => [r.gameId, r.goalies]));
 
     games.forEach((game, index) => {
         const summary = game.summary;
@@ -116,6 +124,11 @@ export function renderTeamSchedule(games, teamName, container) {
             isFutureGame = true;
         }
 
+        // Get goalie stats for this game
+        const goalies = goalieStatsMap.get(game.id) || [];
+        const teamGoalie = goalies.find(g => g.team_name === teamName);
+        const opponentGoalie = goalies.find(g => g.team_name === opponent);
+
         html += `
             <div class="schedule-row ${isFutureGame ? 'future-game' : ''}">
                 <div class="schedule-week">${index + 1}</div>
@@ -129,6 +142,39 @@ export function renderTeamSchedule(games, teamName, container) {
                 <div class="schedule-result ${result.toLowerCase()}">${result}</div>
             </div>
         `;
+
+        // Add goalie stats row if available
+        if (!isFutureGame && (teamGoalie || opponentGoalie)) {
+            html += `
+                <div class="schedule-goalie-stats">
+            `;
+            
+            if (teamGoalie) {
+                const savePct = teamGoalie.save_percentage ? teamGoalie.save_percentage.toFixed(3) : '-';
+                html += `
+                    <div class="goalie-stat">
+                        <img src="${getTeamLogoPath(teamName)}" alt="${teamName}" 
+                             class="team-logo-small" onerror="this.style.display='none'">
+                        <span class="goalie-name">${teamGoalie.name}</span>
+                        <span class="goalie-stats">${teamGoalie.saves}/${teamGoalie.shots_against} (${savePct})</span>
+                    </div>
+                `;
+            }
+            
+            if (opponentGoalie) {
+                const savePct = opponentGoalie.save_percentage ? opponentGoalie.save_percentage.toFixed(3) : '-';
+                html += `
+                    <div class="goalie-stat">
+                        <img src="${getTeamLogoPath(opponent)}" alt="${opponent}" 
+                             class="team-logo-small" onerror="this.style.display='none'">
+                        <span class="goalie-name">${opponentGoalie.name}</span>
+                        <span class="goalie-stats">${opponentGoalie.saves}/${opponentGoalie.shots_against} (${savePct})</span>
+                    </div>
+                `;
+            }
+            
+            html += `</div>`;
+        }
     });
 
     container.innerHTML = html;
@@ -142,7 +188,7 @@ export async function loadTeamGames(teamId, teamName, container, season = 'Sprin
     
     try {
         const games = await fetchTeamGames(teamId, season);
-        renderTeamSchedule(games, teamName, container);
+        await renderTeamSchedule(games, teamName, container);
     } catch (error) {
         console.error('Error loading team games:', error);
         displayError(container, 'Failed to load schedule. Please try again later.');

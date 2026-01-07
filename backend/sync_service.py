@@ -151,13 +151,10 @@ def update_aggregated_stats_for_game(game_id, season_id):
         except Exception as e:
             print(f"Error updating player {player_id} stats: {e}")
     
-    # Get goalies for both teams (simplified - assumes one goalie per team)
-    # In production, you'd track which goalie played in each game
+    # Get goalies for both teams from goalies table
     cursor.execute("""
-        SELECT id FROM players
-        WHERE team_id IN (%s, %s)
-        -- In production, you'd filter by is_goalie or similar
-        LIMIT 2
+        SELECT id FROM goalies
+        WHERE team_id IN (%s, %s) AND status = 'active'
     """, (home_team_id, away_team_id))
     goalie_ids = [row[0] for row in cursor.fetchall()]
     

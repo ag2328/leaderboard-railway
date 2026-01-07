@@ -125,8 +125,9 @@ FLASK_ENV=development
 - `GET /api/standings?season=Spring+2026` - Get team standings
 - `GET /api/teams/:teamId/games?season=Spring+2026` - Get team's games
 - `GET /api/teams/:teamId/players?season=Spring+2026` - Get player stats
-- `GET /api/teams/:teamId/goalie?season=Spring+2026` - Get goalie stats
+- `GET /api/teams/:teamId/goalie?season=Spring+2026` - Get goalie season stats
 - `GET /api/games/:gameId/summary` - Get game summary
+- `GET /api/games/:gameId/goalies` - Get goalie stats for a game
 
 ### Admin Endpoints (Protected)
 
@@ -140,6 +141,55 @@ FLASK_ENV=development
 - Manual sync mode: Process games, then manually trigger stats update
 - Auto sync mode: Stats update automatically when games are processed
 - Game summary cards show: scores, shots, outcome (regulation/OT/SO)
+
+## Goalie Tracking
+
+### Overview
+
+The leaderboard tracks goalie statistics at two levels:
+1. **Per-Game Stats** (`goalie_game_stats`): Individual game performance
+2. **Season Stats** (`goalie_season_stats`): Aggregated across all games and teams
+
+### Data Source
+
+Goalie assignments are tracked in the `game_goalies` table (managed by Scorekeepr):
+- `game_id`: Which game
+- `team_id`: Which team the goalie played for
+- `goalie_id`: Registered goalie (NULL for sub goalies)
+- `first_name`, `last_name`, `jersey_number`: For sub goalies (manual entry)
+- `is_home_team`: Whether the goalie is on the home team
+
+### Key Features
+
+1. **Multi-Team Support**: Goalies can play for multiple teams in a season
+   - Season stats aggregate across all teams
+   - Game stats are tracked per game per team
+
+2. **Sub Goalies**: Handles temporary/substitute goalies
+   - Sub goalies (goalie_id is NULL) are tracked in `game_goalies` but not in stats tables
+   - Only registered goalies (with goalie_id) have stats calculated
+
+3. **Stats Calculation**:
+   - **Per-Game**: Calculated from `game_summaries` (shots and goals) and `game_goalies` (which goalie played)
+   - **Season**: Aggregated from `goalie_game_stats` across all games
+
+### Scorekeepr Integration
+
+**For Scorekeepr developers**: When assigning goalies to games:
+- Use the `game_goalies` table to record which goalie(s) played
+- Set `goalie_id` for registered goalies
+- For sub goalies, set `first_name`, `last_name`, `jersey_number` and leave `goalie_id` NULL
+- The leaderboard will automatically calculate stats when games are processed
+
+**Future Enhancements** (for Scorekeepr):
+- UI to modify/identify/insert goalie assignments
+- Support for tracking goalie changes mid-game
+- Support for multiple goalies per team per game
+
+### API Endpoints
+
+- `GET /api/games/:gameId/goalies` - Get goalie stats for a specific game
+- `GET /api/teams/:teamId/goalie?season=Spring+2026` - Get team's goalie season stats
 
 ## License
 

@@ -289,24 +289,32 @@ def get_team_players(team_id, season_id):
 
 
 def get_team_goalie(team_id, season_id):
-    """Get goalie stats for a team."""
+    """Get goalie stats for a team. Returns goalie with zero stats if no stats exist."""
     conn = get_db_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     cursor.execute("""
-        SELECT p.*,
-               gss.shots_against,
-               gss.goals_allowed,
-               gss.saves,
-               gss.save_percentage
-        FROM players p
-        JOIN goalie_season_stats gss ON p.id = gss.goalie_id
-        WHERE p.team_id = %s AND gss.season_id = %s
+        SELECT g.*,
+               COALESCE(gss.shots_against, 0) as shots_against,
+               COALESCE(gss.goals_allowed, 0) as goals_allowed,
+               COALESCE(gss.saves, 0) as saves,
+               COALESCE(gss.save_percentage, 0.0) as save_percentage
+        FROM goalies g
+        LEFT JOIN goalie_season_stats gss ON g.id = gss.goalie_id AND gss.season_id = %s
+        WHERE g.team_id = %s AND g.status = 'active'
         LIMIT 1
-    """, (team_id, season_id))
+    """, (season_id, team_id))
     goalie = cursor.fetchone()
     cursor.close()
     conn.close()
-    return dict(goalie) if goalie else None
+    if goalie:
+        goalie_dict = dict(goalie)
+        # Ensure all stats are integers/floats, not None
+        goalie_dict['shots_against'] = goalie_dict.get('shots_against', 0) or 0
+        goalie_dict['goals_allowed'] = goalie_dict.get('goals_allowed', 0) or 0
+        goalie_dict['saves'] = goalie_dict.get('saves', 0) or 0
+        goalie_dict['save_percentage'] = goalie_dict.get('save_percentage', 0.0) or 0.0
+        return goalie_dict
+    return None
 
 
 # ============================================================================
@@ -348,4 +356,36 @@ def count_goals_by_team(game_id, team_id):
     cursor.close()
     conn.close()
     return count
+
+
+def get_game_goalie_stats(game_id):
+    """
+    Get goalie stats for a specific game.
+    
+    Returns list of goalie stats with goalie info and team info.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor.execute("""
+        SELECT 
+            ggs.goalie_id,
+            ggs.team_id,
+            ggs.shots_against,
+            ggs.goals_allowed,
+            ggs.saves,
+            ggs.save_percentage,
+            g.name,
+            g.full_name,
+            g.jersey_number,
+            t.name as team_name
+        FROM goalie_game_stats ggs
+        JOIN goalies g ON ggs.goalie_id = g.id
+        JOIN teams t ON ggs.team_id = t.id
+        WHERE ggs.game_id = %s
+        ORDER BY ggs.team_id, g.name
+    """, (game_id,))
+    goalies = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return [dict(goalie) for goalie in goalies]
 

@@ -87,12 +87,15 @@ export function renderPlayerStats(players, container) {
             const shotsAgainst = goalie.shots_against || 0;
             const goalsAllowed = goalie.goals_allowed || 0;
             const saves = goalie.saves || 0;
-            const savePct = goalie.save_percentage ? goalie.save_percentage.toFixed(3) : '-';
+            // Show 0.000 for zero stats, otherwise format the percentage
+            const savePct = (goalie.save_percentage !== null && goalie.save_percentage !== undefined) 
+                ? parseFloat(goalie.save_percentage).toFixed(3) 
+                : '0.000';
 
             html += `
                 <tr class="goalie-row">
                     <td>${goalie.jersey_number || '-'}</td>
-                    <td>${goalie.name}</td>
+                    <td>${goalie.name || 'Unknown'}</td>
                     <td>${shotsAgainst}</td>
                     <td>${goalsAllowed}</td>
                     <td>${saves}</td>
@@ -124,25 +127,28 @@ export async function loadPlayerStats(teamId, container, season = 'Spring 2026')
         
         // Merge goalie data if available
         if (goalie) {
-            const goalieInPlayers = players.find(p => p.id === goalie.id);
+            // Ensure goalie has all required fields with defaults
+            const goalieData = {
+                ...goalie,
+                id: goalie.id || goalie.goalie_id,
+                is_goalie: true,
+                name: goalie.name || 'Unknown',
+                jersey_number: goalie.jersey_number || null,
+                shots_against: goalie.shots_against || 0,
+                goals_allowed: goalie.goals_allowed || 0,
+                saves: goalie.saves || 0,
+                save_percentage: goalie.save_percentage || 0.0
+            };
+            
+            // Check if goalie is already in players list (shouldn't be, but just in case)
+            const goalieInPlayers = players.find(p => p.id === goalieData.id);
             if (!goalieInPlayers) {
-                players.push({
-                    ...goalie,
-                    is_goalie: true,
-                    shots_against: goalie.shots_against,
-                    goals_allowed: goalie.goals_allowed,
-                    saves: goalie.saves,
-                    save_percentage: goalie.save_percentage
-                });
+                players.push(goalieData);
             } else {
-                Object.assign(goalieInPlayers, {
-                    is_goalie: true,
-                    shots_against: goalie.shots_against,
-                    goals_allowed: goalie.goals_allowed,
-                    saves: goalie.saves,
-                    save_percentage: goalie.save_percentage
-                });
+                Object.assign(goalieInPlayers, goalieData);
             }
+        } else {
+            console.warn(`No goalie found for team ${teamId} in season ${season}`);
         }
         
         renderPlayerStats(players, container);

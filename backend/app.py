@@ -21,7 +21,7 @@ from models import (
     get_all_teams, get_team_by_id,
     get_team_standings, get_team_standing,
     get_team_games, get_game_by_id, get_game_summary,
-    get_team_players, get_team_goalie
+    get_team_players, get_team_goalie, get_game_goalie_stats
 )
 from sync_service import (
     process_pending_games,
@@ -325,6 +325,15 @@ def get_game_summary_endpoint(game_id):
     if not summary:
         return jsonify({'error': 'Game summary not found'}), 404
     return jsonify({'summary': summary})
+
+
+@app.route('/api/games/<int:game_id>/goalies', methods=['GET'])
+def get_game_goalies_endpoint(game_id):
+    """Get goalie stats for a specific game."""
+    goalies = get_game_goalie_stats(game_id)
+    if not goalies:
+        return jsonify({'goalies': []}), 200
+    return jsonify({'goalies': goalies})
 
 
 # ============================================================================

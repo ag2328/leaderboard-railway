@@ -374,6 +374,42 @@ body {
     font-style: italic;
 }
 
+/* Goalie stats row (appears below schedule row for completed games) */
+.schedule-goalie-stats {
+    display: flex;
+    gap: var(--spacing-md);
+    padding: 0.5em 1em 0.5em 13em; /* Align with schedule row content (WK + DATE + margin) */
+    border-bottom: 1px solid var(--border);
+    font-size: 0.85em;
+    color: var(--text-secondary);
+    background: var(--surface-1);
+}
+
+.goalie-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    flex: 1;
+}
+
+.goalie-stat .team-logo-small {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.goalie-stat .goalie-name {
+    font-weight: 500;
+    color: var(--text-primary);
+    min-width: 5em;
+}
+
+.goalie-stat .goalie-stats {
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
 @media (max-width: 480px) {
     .schedule-header, .schedule-row {
         padding: 0.5em 0.75em;
@@ -393,6 +429,17 @@ body {
     .schedule-result {
         padding: 0.2em 0.4em;
         min-width: 20px;
+    }
+
+    .schedule-goalie-stats {
+        padding-left: 0.5em;
+        font-size: 0.75em;
+        flex-direction: column;
+        gap: 0.25em;
+    }
+
+    .goalie-stat .goalie-name {
+        min-width: 4em;
     }
 }
 

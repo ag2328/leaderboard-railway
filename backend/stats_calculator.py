@@ -174,44 +174,113 @@ def calculate_goalie_game_stats(game_id):
     """
     Calculate goalie stats for a game.
     
+    Uses game_goalies table to identify which goalie(s) played in the game,
+    and game_summaries to get shots and goals.
+    
     For each goalie in the game, calculate:
     - Shots against
     - Goals allowed
     - Saves
     - Save percentage
+    
+    Handles:
+    - Registered goalies (goalie_id is set)
+    - Sub goalies (goalie_id is NULL, uses first_name/last_name)
+    - Goalies playing for different teams
     """
     game = get_game_by_id(game_id)
     if not game:
         return None
     
-    events = get_game_events(game_id)
-    
-    # Get goalies for both teams
-    # For now, we'll need to identify goalies - this is simplified
-    # In a real system, you'd track which goalie was in net for each period
-    
-    # Get goals against each team
-    home_goals_against = count_goals_by_team(game_id, game['away_team_id'])
-    away_goals_against = count_goals_by_team(game_id, game['home_team_id'])
-    
-    # For now, shots = goals (simplified)
-    # TODO: Add actual shot tracking
-    home_shots_against = home_goals_against
-    away_shots_against = away_goals_against
-    
-    # Get goalies for each team (simplified - assumes one goalie per team)
-    # In reality, you'd need to track which goalie played in each period
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    # This is a simplified version - in production you'd need to track
-    # which goalie was in net for each period
-    # For now, we'll skip goalie game stats and calculate season stats directly
+    # Get game summary (shots and goals)
+    cursor.execute("""
+        SELECT home_team_shots, away_team_shots,
+               home_team_score, away_team_score
+        FROM game_summaries
+        WHERE game_id = %s
+    """, (game_id,))
+    summary = cursor.fetchone()
     
+    if not summary:
+        # No summary yet, can't calculate stats
+        cursor.close()
+        conn.close()
+        return None
+    
+    home_team_shots, away_team_shots, home_team_score, away_team_score = summary
+    
+    # Get goalies assigned to this game from game_goalies table
+    cursor.execute("""
+        SELECT gg.id, gg.goalie_id, gg.team_id, gg.is_home_team,
+               gg.first_name, gg.last_name, gg.jersey_number,
+               g.name, g.full_name
+        FROM game_goalies gg
+        LEFT JOIN goalies g ON gg.goalie_id = g.id
+        WHERE gg.game_id = %s
+    """, (game_id,))
+    game_goalies = cursor.fetchall()
+    
+    if not game_goalies:
+        # No goalies assigned to this game yet
+        cursor.close()
+        conn.close()
+        return None
+    
+    results = []
+    
+    # Calculate stats for each goalie in the game
+    for gg in game_goalies:
+        gg_id, goalie_id, team_id, is_home_team, first_name, last_name, jersey_number, goalie_name, goalie_full_name = gg
+        
+        # Determine shots against and goals allowed based on which team they're on
+        if is_home_team:
+            shots_against = away_team_shots
+            goals_allowed = away_team_score
+        else:
+            shots_against = home_team_shots
+            goals_allowed = home_team_score
+        
+        # Calculate saves and save percentage
+        saves = shots_against - goals_allowed
+        save_percentage = (saves / shots_against * 100) if shots_against > 0 else 0.0
+        
+        # Only insert stats if goalie_id is set (registered goalie)
+        # Sub goalies (goalie_id is NULL) won't have game stats tracked
+        if goalie_id:
+            # Insert or update goalie_game_stats
+            cursor.execute("""
+                INSERT INTO goalie_game_stats (
+                    game_id, goalie_id, team_id,
+                    shots_against, goals_allowed, saves, save_percentage
+                )
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (game_id, goalie_id)
+                DO UPDATE SET
+                    team_id = EXCLUDED.team_id,
+                    shots_against = EXCLUDED.shots_against,
+                    goals_allowed = EXCLUDED.goals_allowed,
+                    saves = EXCLUDED.saves,
+                    save_percentage = EXCLUDED.save_percentage,
+                    updated_at = NOW()
+            """, (game_id, goalie_id, team_id, shots_against, goals_allowed, saves, round(save_percentage, 3)))
+            
+            results.append({
+                'goalie_id': goalie_id,
+                'team_id': team_id,
+                'shots_against': shots_against,
+                'goals_allowed': goals_allowed,
+                'saves': saves,
+                'save_percentage': round(save_percentage, 3)
+            })
+    
+    conn.commit()
     cursor.close()
     conn.close()
     
-    return None  # Simplified for now
+    return results if results else None
 
 
 # ============================================================================
@@ -432,73 +501,58 @@ def calculate_goalie_season_stats(goalie_id, season_id):
     """
     Calculate and update goalie season statistics.
     
-    Aggregates from game_summaries and events:
-    - Shots against
-    - Goals allowed
-    - Saves
-    - Save percentage
+    Aggregates from goalie_game_stats (per-game stats) across all teams.
+    This allows goalies who play for multiple teams to have combined season stats.
+    
+    Stats calculated:
+    - Shots against (sum across all games)
+    - Goals allowed (sum across all games)
+    - Saves (calculated)
+    - Save percentage (calculated)
     """
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    # Get goalie's team
-    cursor.execute("SELECT team_id FROM players WHERE id = %s", (goalie_id,))
+    # Verify goalie exists
+    cursor.execute("SELECT id FROM goalies WHERE id = %s", (goalie_id,))
     goalie = cursor.fetchone()
     if not goalie:
         cursor.close()
         conn.close()
         return None
     
-    team_id = goalie[0]
-    
-    # Get all games for this team in this season
+    # Aggregate stats from goalie_game_stats for this goalie in this season
+    # This aggregates across all teams the goalie played for
     cursor.execute("""
-        SELECT id FROM games 
-        WHERE season_id = %s 
-          AND status = 'locked'
-          AND (home_team_id = %s OR away_team_id = %s)
-    """, (season_id, team_id, team_id))
-    game_ids = [row[0] for row in cursor.fetchall()]
+        SELECT 
+            COALESCE(SUM(shots_against), 0) as shots_against,
+            COALESCE(SUM(goals_allowed), 0) as goals_allowed,
+            COALESCE(SUM(saves), 0) as saves
+        FROM goalie_game_stats ggs
+        JOIN games g ON ggs.game_id = g.id
+        WHERE ggs.goalie_id = %s
+          AND g.season_id = %s
+          AND g.status = 'locked'
+    """, (goalie_id, season_id))
     
-    if not game_ids:
+    result = cursor.fetchone()
+    if not result:
         cursor.close()
         conn.close()
         return None
     
-    # Aggregate stats from game_summaries
-    # For now, simplified - assumes goalie played all games
-    # In production, you'd track which goalie played in each game/period
+    shots_against, goals_allowed, saves = result
     
-    shots_against = 0
-    goals_allowed = 0
-    
-    for game_id in game_ids:
-        cursor.execute("""
-            SELECT home_team_id, away_team_id FROM games WHERE id = %s
-        """, (game_id,))
-        game = cursor.fetchone()
-        
-        is_home = game[0] == team_id
-        
-        cursor.execute("""
-            SELECT home_team_shots, away_team_shots,
-                   home_team_score, away_team_score
-            FROM game_summaries WHERE game_id = %s
-        """, (game_id,))
-        summary = cursor.fetchone()
-        
-        if summary:
-            if is_home:
-                shots_against += summary[1]  # away_team_shots
-                goals_allowed += summary[3]  # away_team_score
-            else:
-                shots_against += summary[0]  # home_team_shots
-                goals_allowed += summary[2]  # home_team_score
-    
+    # Recalculate saves and save percentage (in case of data inconsistencies)
     saves = shots_against - goals_allowed
     save_percentage = (saves / shots_against * 100) if shots_against > 0 else 0.0
     
-    # Insert or update goalie stats
+    # Get the goalie's current team_id (for display purposes, but stats are aggregated)
+    cursor.execute("SELECT team_id FROM goalies WHERE id = %s", (goalie_id,))
+    current_team_id = cursor.fetchone()[0]
+    
+    # Insert or update goalie season stats
+    # Note: team_id is stored but stats are aggregated across all teams
     cursor.execute("""
         INSERT INTO goalie_season_stats (
             goalie_id, team_id, season_id,
@@ -507,12 +561,13 @@ def calculate_goalie_season_stats(goalie_id, season_id):
         VALUES (%s, %s, %s, %s, %s, %s, %s)
         ON CONFLICT (goalie_id, season_id)
         DO UPDATE SET
+            team_id = EXCLUDED.team_id,
             shots_against = EXCLUDED.shots_against,
             goals_allowed = EXCLUDED.goals_allowed,
             saves = EXCLUDED.saves,
             save_percentage = EXCLUDED.save_percentage,
             updated_at = NOW()
-    """, (goalie_id, team_id, season_id, shots_against, goals_allowed, saves, round(save_percentage, 3)))
+    """, (goalie_id, current_team_id, season_id, shots_against, goals_allowed, saves, round(save_percentage, 3)))
     
     conn.commit()
     cursor.close()
