@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Legends Hockey - Spring 2026 Leaderboard</title>
+    <title>Legends Hockey</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -12,38 +12,34 @@
 <body>
     <!-- Main Standings Page -->
     <div id="standings-page" class="screen">
-        <div class="container">
-            <div class="app-header">
-                <div class="app-logo"></div>
-                <h1 class="app-title">Legends Hockey</h1>
-                <p class="app-subtitle">In-House Spring League 2026</p>
-                <p class="app-subtitle">14/16U</p>
-            </div>
-            
-            <div class="standings-container" id="standings-container">
-                <div class="loading">Loading standings data...</div>
-            </div>
-            
-            <div class="standings-update-message">Standings updated by 8pm on Mondays</div>
+        <div class="app-header">
+            <div class="app-logo"></div>
+            <h1 class="app-title">Legends Hockey</h1>
+            <p class="app-subtitle">In-House 14/16U League</p>
+            <p class="app-season" id="season-title">Spring 2026</p>
         </div>
+        
+        <div class="standings-container" id="standings-container">
+            <div class="loading">Loading standings data...</div>
+        </div>
+        
+        <div class="standings-update-message">Standings updated by 8pm on Mondays</div>
     </div>
 
     <!-- Team Page -->
     <div id="team-page" class="screen hidden">
-        <div class="container">
-            <div class="app-header">
-                <div class="app-logo" id="team-logo"></div>
-                <h1 class="app-title" id="team-title">Team Schedule</h1>
-                <a href="#" class="back-link" id="back-to-standings">← Back to Standings</a>
-            </div>
-            
-            <div class="schedule-container" id="schedule-container">
-                <div class="loading">Loading schedule data...</div>
-            </div>
-            
-            <div class="player-stats-container" id="player-stats-container">
-                <!-- Player stats will be inserted here -->
-            </div>
+        <div class="app-header">
+            <div class="app-logo" id="team-logo"></div>
+            <h1 class="app-title" id="team-title">Team Schedule</h1>
+            <a href="#" class="back-link" id="back-to-standings">← Back to Standings</a>
+        </div>
+        
+        <div class="schedule-container" id="schedule-container">
+            <div class="loading">Loading schedule data...</div>
+        </div>
+        
+        <div class="player-stats-container" id="player-stats-container">
+            <!-- Player stats will be inserted here -->
         </div>
     </div>
 
