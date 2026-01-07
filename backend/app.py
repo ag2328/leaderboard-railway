@@ -60,8 +60,108 @@ def get_season_from_request():
 
 @app.route('/api/health', methods=['GET'])
 def health():
-    """Health check endpoint."""
-    return jsonify({'status': 'ok'})
+    """Health check endpoint with database connection test."""
+    from models import get_db_connection
+    
+    health_status = {
+        'status': 'ok',
+        'database': 'unknown',
+        'environment': {
+            'current_season': CURRENT_SEASON,
+            'auto_sync_enabled': AUTO_SYNC_ENABLED,
+            'flask_env': os.getenv('FLASK_ENV', 'not set')
+        }
+    }
+    
+    # Test database connection
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT version();')
+        db_version = cursor.fetchone()[0]
+        cursor.close()
+        conn.close()
+        
+        health_status['database'] = {
+            'status': 'connected',
+            'version': db_version.split(',')[0]  # Just the PostgreSQL version
+        }
+    except Exception as e:
+        health_status['status'] = 'error'
+        health_status['database'] = {
+            'status': 'error',
+            'error': str(e)
+        }
+        return jsonify(health_status), 500
+    
+    return jsonify(health_status)
+
+
+@app.route('/api/test-db', methods=['GET'])
+def test_database():
+    """Test database connection and check for required tables."""
+    from models import get_db_connection
+    
+    results = {
+        'connection': 'unknown',
+        'tables': {},
+        'season_check': {}
+    }
+    
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Test basic connection
+        cursor.execute('SELECT version();')
+        db_version = cursor.fetchone()[0]
+        results['connection'] = {
+            'status': 'connected',
+            'version': db_version.split(',')[0]
+        }
+        
+        # Check for required tables
+        required_tables = ['seasons', 'teams', 'games', 'game_summaries', 
+                          'team_standings', 'player_season_stats', 'goalie_season_stats']
+        
+        for table in required_tables:
+            cursor.execute("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_schema = 'public' 
+                    AND table_name = %s
+                );
+            """, (table,))
+            exists = cursor.fetchone()[0]
+            results['tables'][table] = 'exists' if exists else 'missing'
+        
+        # Check for Spring 2026 season
+        cursor.execute("SELECT id, name, is_active FROM seasons WHERE name = %s", ('Spring 2026',))
+        season = cursor.fetchone()
+        if season:
+            results['season_check'] = {
+                'status': 'found',
+                'id': season[0],
+                'name': season[1],
+                'is_active': season[2]
+            }
+        else:
+            results['season_check'] = {
+                'status': 'not_found',
+                'message': 'Spring 2026 season not found. Run setup_season.py'
+            }
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify(results)
+        
+    except Exception as e:
+        results['connection'] = {
+            'status': 'error',
+            'error': str(e)
+        }
+        return jsonify(results), 500
 
 
 @app.route('/api/standings', methods=['GET'])
