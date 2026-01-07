@@ -4,7 +4,7 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "cd backend && gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 120 --keep-alive 5 --worker-class sync --capture-output --enable-stdio-inheritance --log-level info --access-logfile - --error-logfile - app:app",
+    "startCommand": "cd backend && gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 2 --timeout 120 --keep-alive 5 --worker-class sync --capture-output --enable-stdio-inheritance --log-level info --access-logfile - --error-logfile - --preload app:app",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
   }

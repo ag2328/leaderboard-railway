@@ -48,21 +48,25 @@ CURRENT_SEASON = os.getenv('CURRENT_SEASON', 'Spring 2026')
 AUTO_SYNC_ENABLED = os.getenv('AUTO_SYNC_ENABLED', 'false').lower() == 'true'
 
 # Log startup info (for gunicorn workers)
-print(f"[App Startup] Flask app initialized")
-print(f"[App Startup] Current Season: {CURRENT_SEASON}")
-print(f"[App Startup] Auto Sync: {AUTO_SYNC_ENABLED}")
-print(f"[App Startup] DATABASE_URL set: {bool(os.getenv('DATABASE_URL'))}")
+import sys
+print(f"[App Startup] Flask app initialized", flush=True)
+print(f"[App Startup] Current Season: {CURRENT_SEASON}", flush=True)
+print(f"[App Startup] Auto Sync: {AUTO_SYNC_ENABLED}", flush=True)
+print(f"[App Startup] DATABASE_URL set: {bool(os.getenv('DATABASE_URL'))}", flush=True)
+print(f"[App Startup] App is ready to accept requests", flush=True)
+sys.stdout.flush()
 
-# Test database connection on startup
+# Test database connection on startup (non-blocking - don't fail if DB is slow)
 try:
     from models import get_db_connection
     test_conn = get_db_connection()
     test_conn.close()
-    print(f"[App Startup] Database connection test: SUCCESS")
+    print(f"[App Startup] Database connection test: SUCCESS", flush=True)
 except Exception as e:
-    print(f"[App Startup] Database connection test: FAILED - {str(e)}")
+    print(f"[App Startup] Database connection test: FAILED - {str(e)}", flush=True)
     import traceback
     traceback.print_exc()
+sys.stdout.flush()
 
 
 # ============================================================================
