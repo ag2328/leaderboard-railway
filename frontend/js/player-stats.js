@@ -28,12 +28,12 @@ export function renderPlayerStats(players, container) {
     });
 
     let html = `
-        <div class="player-stats-title">Player Statistics</div>
+        <div class="player-stats-title">Player Stats</div>
         <table class="player-stats-table">
             <thead>
                 <tr>
                     <th>#</th>
-                    <th>Player</th>
+                    <th>NAME</th>
                     <th>G</th>
                     <th>A</th>
                     <th>P</th>
@@ -46,7 +46,6 @@ export function renderPlayerStats(players, container) {
     sortedSkaters.forEach(player => {
         const goals = player.goals || 0;
         const assists = player.assists || 0;
-        const penalties = player.penalties || 0;
         const points = goals + assists;
 
         html += `
@@ -55,7 +54,7 @@ export function renderPlayerStats(players, container) {
                 <td>${player.name}</td>
                 <td>${goals}</td>
                 <td>${assists}</td>
-                <td>${penalties}</td>
+                <td>${points}</td>
             </tr>
         `;
     });
@@ -65,22 +64,22 @@ export function renderPlayerStats(players, container) {
         </table>
     `;
 
-    // Render goalies if available
+    // Render goalies if available (centered, no heading)
     if (goalies.length > 0) {
         html += `
-            <div class="player-stats-title" style="margin-top: var(--spacing-xl);">Goaltender Statistics</div>
-            <table class="player-stats-table">
-                <thead>
-                    <tr class="goalie-header-row">
-                        <th>#</th>
-                        <th>Goalie</th>
-                        <th>SA</th>
-                        <th>GA</th>
-                        <th>SV</th>
-                        <th>SV%</th>
-                    </tr>
-                </thead>
-                <tbody>
+            <div class="goalie-stats-container">
+                <table class="player-stats-table goalie-stats-table">
+                    <thead>
+                        <tr class="goalie-header-row">
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>SA</th>
+                            <th>GA</th>
+                            <th>SV</th>
+                            <th>SV%</th>
+                        </tr>
+                    </thead>
+                    <tbody>
         `;
 
         goalies.forEach(goalie => {
@@ -105,10 +104,28 @@ export function renderPlayerStats(players, container) {
         });
 
         html += `
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         `;
     }
+
+    // Add legend and update message
+    html += `
+        <div class="stats-legend">
+            <div class="legend-title">Legend</div>
+            <div class="legend-items">
+                <div class="legend-item"><span class="legend-key">G:</span> Goals</div>
+                <div class="legend-item"><span class="legend-key">A:</span> Assists</div>
+                <div class="legend-item"><span class="legend-key">P:</span> Penalties</div>
+                <div class="legend-item"><span class="legend-key">SA:</span> Shots Against</div>
+                <div class="legend-item"><span class="legend-key">GA:</span> Goals Allowed</div>
+                <div class="legend-item"><span class="legend-key">SV:</span> Saves</div>
+                <div class="legend-item"><span class="legend-key">SV%:</span> Save Percentage</div>
+            </div>
+        </div>
+        <div class="stats-update-message">Standings updated by 8pm on Mondays</div>
+    `;
 
     container.innerHTML = html;
 }
