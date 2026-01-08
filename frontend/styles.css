@@ -759,6 +759,13 @@ body {
     color: var(--text-primary);
 }
 
+.player-name-cell {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
 .player-stats-table tbody tr:hover {
     background: var(--surface-2);
 }

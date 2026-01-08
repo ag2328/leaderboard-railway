@@ -51,7 +51,7 @@ export function renderPlayerStats(players, container) {
         html += `
             <tr>
                 <td>${player.jersey_number || '-'}</td>
-                <td>${player.name}</td>
+                <td class="player-name-cell">${player.name}</td>
                 <td>${goals}</td>
                 <td>${assists}</td>
                 <td>${penalties}</td>
@@ -86,15 +86,20 @@ export function renderPlayerStats(players, container) {
             const shotsAgainst = goalie.shots_against || 0;
             const goalsAllowed = goalie.goals_allowed || 0;
             const saves = goalie.saves || 0;
-            // Show 0.000 for zero stats, otherwise format the percentage
-            const savePct = (goalie.save_percentage !== null && goalie.save_percentage !== undefined) 
-                ? parseFloat(goalie.save_percentage).toFixed(3) 
-                : '0.000';
+            // Convert percentage (0-100) to decimal (0-1) and format to 3 decimal places
+            let savePct = '0.000';
+            if (goalie.save_percentage !== null && goalie.save_percentage !== undefined) {
+                const percentage = parseFloat(goalie.save_percentage);
+                // If it's already a percentage (like 80.0), convert to decimal (0.800)
+                // If it's already a decimal (like 0.80), keep it as is
+                const decimal = percentage > 1 ? percentage / 100 : percentage;
+                savePct = decimal.toFixed(3);
+            }
 
             html += `
                 <tr class="goalie-row">
                     <td>${goalie.jersey_number || '-'}</td>
-                    <td>${goalie.name || 'Unknown'}</td>
+                    <td class="player-name-cell">${goalie.name || 'Unknown'}</td>
                     <td>${shotsAgainst}</td>
                     <td>${goalsAllowed}</td>
                     <td>${saves}</td>
