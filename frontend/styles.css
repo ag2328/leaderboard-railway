@@ -805,11 +805,17 @@ body {
 
 .legend-items {
     display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.legend-line {
+    display: flex;
     flex-wrap: wrap;
     justify-content: center;
     gap: var(--spacing-md);
-    font-size: 0.85rem;
-    color: var(--text-secondary);
 }
 
 .legend-item {

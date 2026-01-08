@@ -120,13 +120,19 @@ export function renderPlayerStats(players, container) {
         <div class="stats-legend">
             <div class="legend-title">Legend</div>
             <div class="legend-items">
-                <div class="legend-item"><span class="legend-key">G:</span> Goals</div>
-                <div class="legend-item"><span class="legend-key">A:</span> Assists</div>
-                <div class="legend-item"><span class="legend-key">P:</span> Penalties</div>
-                <div class="legend-item"><span class="legend-key">SA:</span> Shots Against</div>
-                <div class="legend-item"><span class="legend-key">GA:</span> Goals Allowed</div>
-                <div class="legend-item"><span class="legend-key">SV:</span> Saves</div>
-                <div class="legend-item"><span class="legend-key">SV%:</span> Save Percentage</div>
+                <div class="legend-line">
+                    <div class="legend-item"><span class="legend-key">G:</span> Goals</div>
+                    <div class="legend-item"><span class="legend-key">A:</span> Assists</div>
+                    <div class="legend-item"><span class="legend-key">P:</span> Penalties</div>
+                </div>
+                <div class="legend-line">
+                    <div class="legend-item"><span class="legend-key">SA:</span> Shots Against</div>
+                    <div class="legend-item"><span class="legend-key">GA:</span> Goals Allowed</div>
+                    <div class="legend-item"><span class="legend-key">SV:</span> Saves</div>
+                </div>
+                <div class="legend-line">
+                    <div class="legend-item"><span class="legend-key">SV%:</span> Save Percentage</div>
+                </div>
             </div>
         </div>
         <div class="stats-update-message">Standings updated by 8pm on Mondays</div>
