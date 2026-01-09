@@ -341,32 +341,38 @@ export async function renderTeamSchedule(games, teamName, container) {
             }
         }
 
-        // Determine winners
-        const homeIsWinner = summary && summary.winner_team_id === game.home_team_id && summary.game_outcome !== 'tie';
-        const awayIsWinner = summary && summary.winner_team_id === game.away_team_id && summary.game_outcome !== 'tie';
-
-        html += `
-            <div class="schedule-game-row ${isCompleted ? 'completed' : 'upcoming'}">
-                <div class="schedule-game-teams">
-                    <div class="schedule-game-team ${homeIsWinner ? 'winner' : ''}">
-                        <img src="${getTeamLogoPath(homeTeam)}" alt="${homeTeam}" 
-                             class="schedule-team-logo" onerror="this.style.display='none'">
-                        <span class="schedule-team-name">${homeTeam}</span>
-                        ${isCompleted ? `<span class="schedule-team-score">${summary.home_team_score}</span>` : ''}
+        // For completed games, render as a game card (clickable flip card)
+        // For upcoming games, render as schedule row
+        if (isCompleted) {
+            html += renderGameCard(game, teamName);
+        } else {
+            // Determine winners for display
+            const homeIsWinner = summary && summary.winner_team_id === game.home_team_id && summary.game_outcome !== 'tie';
+            const awayIsWinner = summary && summary.winner_team_id === game.away_team_id && summary.game_outcome !== 'tie';
+            
+            html += `
+                <div class="schedule-game-row ${isCompleted ? 'completed' : 'upcoming'}">
+                    <div class="schedule-game-teams">
+                        <div class="schedule-game-team ${homeIsWinner ? 'winner' : ''}">
+                            <img src="${getTeamLogoPath(homeTeam)}" alt="${homeTeam}" 
+                                 class="schedule-team-logo" onerror="this.style.display='none'">
+                            <span class="schedule-team-name">${homeTeam}</span>
+                            ${isCompleted ? `<span class="schedule-team-score">${summary.home_team_score}</span>` : ''}
+                        </div>
+                        <div class="schedule-game-info">
+                            ${isCompleted ? `<span class="schedule-final-status">${finalStatus || 'Final'}</span>` : '<span class="schedule-game-vs">vs</span>'}
+                        </div>
+                        <div class="schedule-game-team ${awayIsWinner ? 'winner' : ''}">
+                            <img src="${getTeamLogoPath(awayTeam)}" alt="${awayTeam}" 
+                                 class="schedule-team-logo" onerror="this.style.display='none'">
+                            <span class="schedule-team-name">${awayTeam}</span>
+                            ${isCompleted ? `<span class="schedule-team-score">${summary.away_team_score}</span>` : ''}
+                        </div>
                     </div>
-                    <div class="schedule-game-info">
-                        ${isCompleted ? `<span class="schedule-final-status">${finalStatus || 'Final'}</span>` : '<span class="schedule-game-vs">vs</span>'}
-                    </div>
-                    <div class="schedule-game-team ${awayIsWinner ? 'winner' : ''}">
-                        <img src="${getTeamLogoPath(awayTeam)}" alt="${awayTeam}" 
-                             class="schedule-team-logo" onerror="this.style.display='none'">
-                        <span class="schedule-team-name">${awayTeam}</span>
-                        ${isCompleted ? `<span class="schedule-team-score">${summary.away_team_score}</span>` : ''}
-                    </div>
+                    ${isCompleted && result ? `<div class="schedule-result-badge ${result.toLowerCase()}">${result}</div>` : ''}
                 </div>
-                ${isCompleted && result ? `<div class="schedule-result-badge ${result.toLowerCase()}">${result}</div>` : ''}
-            </div>
-        `;
+            `;
+        }
     });
     
     // Close the last date section
