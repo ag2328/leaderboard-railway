@@ -352,7 +352,16 @@ export async function renderTeamSchedule(games, teamName, container) {
                         ${isCompleted ? `<span class="schedule-team-score">${teamScoreDisplay}</span>` : ''}
                     </div>
                     <div class="schedule-game-info">
-                        ${isCompleted ? `<span class="schedule-final-status">Final</span>` : '<span class="schedule-game-vs">vs</span>'}
+                        ${
+                            isCompleted
+                                ? `<span class="schedule-final-status">Final${finalStatus ? ` ${finalStatus}` : ''}</span>`
+                                : '<span class="schedule-game-vs">vs</span>'
+                        }
+                        ${
+                            isCompleted && result
+                                ? `<span class="schedule-result-badge ${result.toLowerCase()}">${result}</span>`
+                                : ''
+                        }
                     </div>
                     <div class="schedule-game-team">
                         <img src="${getTeamLogoPath(opponent)}" alt="${opponent}" 
@@ -361,7 +370,6 @@ export async function renderTeamSchedule(games, teamName, container) {
                         ${isCompleted ? `<span class="schedule-team-score">${opponentScoreDisplay}</span>` : ''}
                     </div>
                 </div>
-                ${isCompleted && result ? `<div class="schedule-result-badge ${result.toLowerCase()}">${result}</div>` : ''}
             </div>
         `;
     });
