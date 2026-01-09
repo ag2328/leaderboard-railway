@@ -344,7 +344,7 @@ export async function renderTeamSchedule(games, teamName, container) {
                     <div class="schedule-game-info">
                         ${
                             isCompleted
-                                ? `<span class="schedule-final-status">Final${finalStatus ? ` ${finalStatus}` : ''}</span>`
+                                ? `<span class="schedule-final-status">FINAL${finalStatus ? `/${finalStatus}` : ''}</span>`
                                 : '<span class="schedule-game-vs">vs</span>'
                         }
                         ${
