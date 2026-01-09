@@ -76,6 +76,27 @@ goalie_updated = cursor.rowcount
 print(f"  [OK] Updated {goalie_updated} goalie stats")
 print()
 
+# Unlock all games and clear game summaries
+print("4. Unlocking all games and clearing game summaries...")
+cursor.execute("""
+    UPDATE games
+    SET status = 'pending',
+        leaderboard_processed_at = NULL,
+        updated_at = NOW()
+    WHERE season_id = %s
+""", (season_id,))
+games_updated = cursor.rowcount
+print(f"  [OK] Unlocked {games_updated} games")
+
+# Delete game summaries for this season
+cursor.execute("""
+    DELETE FROM game_summaries
+    WHERE season_id = %s
+""", (season_id,))
+summaries_deleted = cursor.rowcount
+print(f"  [OK] Deleted {summaries_deleted} game summaries")
+print()
+
 conn.commit()
 cursor.close()
 conn.close()
