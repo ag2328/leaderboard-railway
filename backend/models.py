@@ -341,17 +341,56 @@ def get_game_events(game_id):
 
 
 def count_goals_by_team(game_id, team_id):
-    """Count goals scored by a team in a game."""
+    """
+    Count goals scored by a team in a game.
+    
+    Handles two cases:
+    1. Goals with player_id (joins with players table)
+    2. Goals without player_id but with team info in details JSONB
+       (for final_score_only entries from scorekeepr_lite)
+    """
     conn = get_db_connection()
     cursor = conn.cursor()
+    
+    # Get game info to determine home/away team IDs
+    cursor.execute("""
+        SELECT home_team_id, away_team_id
+        FROM games
+        WHERE id = %s
+    """, (game_id,))
+    game = cursor.fetchone()
+    if not game:
+        cursor.close()
+        conn.close()
+        return 0
+    
+    home_team_id = game[0]
+    away_team_id = game[1]
+    
+    # Determine which team string to look for in details
+    team_string = 'home' if team_id == home_team_id else 'away'
+    
+    # Count goals: either with player_id matching team, OR with team in details JSONB
     cursor.execute("""
         SELECT COUNT(*) 
         FROM events e
-        JOIN players p ON e.player_id = p.id
         WHERE e.game_id = %s 
           AND e.event_type = 'goal'
-          AND p.team_id = %s
-    """, (game_id, team_id))
+          AND (
+              -- Goals with player_id (normal case)
+              (e.player_id IS NOT NULL 
+               AND EXISTS (
+                   SELECT 1 FROM players p 
+                   WHERE p.id = e.player_id AND p.team_id = %s
+               ))
+              OR
+              -- Goals without player_id but with team in details (scorekeepr_lite case)
+              (e.player_id IS NULL 
+               AND e.details IS NOT NULL
+               AND e.details->>'team' = %s
+               AND e.details->>'final_score_only' = 'true')
+          )
+    """, (game_id, team_id, team_string))
     count = cursor.fetchone()[0]
     cursor.close()
     conn.close()

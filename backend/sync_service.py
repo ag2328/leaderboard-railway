@@ -106,6 +106,79 @@ def process_pending_games(season_id=None):
     }
 
 
+def process_single_game(game_id):
+    """
+    Process a single game by ID.
+    
+    Used when scorekeepr_lite locks a game and wants immediate processing.
+    
+    Returns:
+        dict: Result with success status and message
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # Get game info
+        cursor.execute("""
+            SELECT id, status, season_id, home_team_id, away_team_id
+            FROM games
+            WHERE id = %s
+        """, (game_id,))
+        game = cursor.fetchone()
+        
+        if not game:
+            return {'error': f'Game {game_id} not found'}
+        
+        if game[1] != 'locked':  # status
+            return {'error': f'Game {game_id} is not locked (status: {game[1]})'}
+        
+        season_id = game[2]
+        if not season_id:
+            return {'error': f'Game {game_id} has no season_id'}
+        
+        # Calculate game summary
+        summary = calculate_game_summary(game_id)
+        if not summary:
+            return {'error': f'Failed to calculate summary for game {game_id}'}
+        
+        # Calculate goalie game stats
+        calculate_goalie_game_stats(game_id)
+        
+        # Mark game as processed
+        cursor.execute("""
+            UPDATE games
+            SET leaderboard_processed_at = %s
+            WHERE id = %s
+        """, (datetime.now(), game_id))
+        
+        # If auto-sync enabled, update aggregated stats
+        if AUTO_SYNC_ENABLED:
+            update_aggregated_stats_for_game(game_id, season_id)
+        else:
+            # Mark game_summary as awaiting manual update
+            cursor.execute("""
+                UPDATE game_summaries
+                SET awaiting_manual_update = true
+                WHERE game_id = %s
+            """, (game_id,))
+        
+        conn.commit()
+        
+        return {
+            'success': True,
+            'game_id': game_id,
+            'message': f'Game {game_id} processed successfully'
+        }
+        
+    except Exception as e:
+        conn.rollback()
+        return {'error': f'Error processing game {game_id}: {str(e)}'}
+    finally:
+        cursor.close()
+        conn.close()
+
+
 def update_aggregated_stats_for_game(game_id, season_id):
     """
     Update all aggregated stats for a specific game.

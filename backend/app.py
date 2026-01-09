@@ -26,7 +26,7 @@ from models import (
     get_game_period_stats
 )
 from sync_service import (
-    process_pending_games,
+    process_pending_games, process_single_game,
     manual_sync_trigger,
     recalculate_all_stats,
     get_sync_status
@@ -370,6 +370,16 @@ def sync_games():
         return jsonify({'error': 'Season not found'}), 404
     
     result = process_pending_games(season['id'])
+    return jsonify(result)
+
+
+@app.route('/api/admin/process-game/<int:game_id>', methods=['POST'])
+def process_single_game_endpoint(game_id):
+    """Process a single game by ID (called by scorekeepr_lite after locking)."""
+    result = process_single_game(game_id)
+    
+    if result.get('error'):
+        return jsonify(result), 400
     return jsonify(result)
 
 
