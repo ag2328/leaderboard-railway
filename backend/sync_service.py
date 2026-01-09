@@ -152,16 +152,9 @@ def process_single_game(game_id):
             WHERE id = %s
         """, (datetime.now(), game_id))
         
-        # If auto-sync enabled, update aggregated stats
-        if AUTO_SYNC_ENABLED:
-            update_aggregated_stats_for_game(game_id, season_id)
-        else:
-            # Mark game_summary as awaiting manual update
-            cursor.execute("""
-                UPDATE game_summaries
-                SET awaiting_manual_update = true
-                WHERE game_id = %s
-            """, (game_id,))
+        # Always update aggregated stats when processing a single game
+        # (called from scorekeepr_lite - user expects immediate results)
+        update_aggregated_stats_for_game(game_id, season_id)
         
         conn.commit()
         
