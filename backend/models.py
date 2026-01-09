@@ -314,8 +314,9 @@ def get_team_goalie(team_id, season_id):
         
         # Recalculate saves and save_percentage from shots_against and goals_allowed
         # (in case database values are incorrect)
+        # Save percentage is stored as decimal (e.g., 0.800 for 80%)
         saves = shots_against - goals_allowed
-        save_percentage = (saves / shots_against * 100) if shots_against > 0 else 0.0
+        save_percentage = (saves / shots_against) if shots_against > 0 else 0.0
         
         goalie_dict['shots_against'] = shots_against
         goalie_dict['goals_allowed'] = goals_allowed

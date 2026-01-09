@@ -114,11 +114,6 @@ def calculate_game_summary(game_id):
         outcome = 'tie'
         winner_id = None
     
-    # For now, shots = goals (simplified)
-    # TODO: Add actual shot tracking later
-    home_shots = home_score
-    away_shots = away_score
-    
     # Get season_id
     season_id = game.get('season_id')
     if not season_id:
@@ -128,6 +123,42 @@ def calculate_game_summary(game_id):
     conn = get_db_connection()
     cursor = conn.cursor()
     
+    # Check if game_summary already exists (e.g., from scorekeepr_lite's enter_goalie_stats)
+    # Also get the existing scores to compare if shots were explicitly set
+    cursor.execute("""
+        SELECT home_team_shots, away_team_shots, home_team_score, away_team_score
+        FROM game_summaries
+        WHERE game_id = %s
+    """, (game_id,))
+    existing_summary = cursor.fetchone()
+    
+    # If shots already exist and are different from scores (meaning they were explicitly set),
+    # preserve them; otherwise use goals as default
+    if existing_summary is not None:
+        existing_home_shots = existing_summary[0]
+        existing_away_shots = existing_summary[1]
+        existing_home_score = existing_summary[2]  # Will be None if not set
+        existing_away_score = existing_summary[3]  # Will be None if not set
+        
+        # If shots exist and are not None, preserve them if they differ from calculated goals
+        # This means they were explicitly set (e.g., by scorekeepr_lite's enter_goalie_stats)
+        if (existing_home_shots is not None and existing_away_shots is not None and
+            (existing_home_shots != home_score or existing_away_shots != away_score)):
+            # Shots differ from calculated goals - they were explicitly set, preserve them
+            home_shots = existing_home_shots
+            away_shots = existing_away_shots
+        else:
+            # Shots either don't exist, or match calculated goals (likely defaults) - use calculated
+            home_shots = home_score
+            away_shots = away_score
+    else:
+        # No existing summary, use default shots = goals
+        home_shots = home_score
+        away_shots = away_score
+    
+    # Use the shots we determined above (either preserved from existing or calculated)
+    # Since we've already determined the correct shots (preserved if explicitly set, calculated otherwise),
+    # we can use them directly in the INSERT/UPDATE
     cursor.execute("""
         INSERT INTO game_summaries (
             game_id, season_id,
@@ -249,9 +280,9 @@ def calculate_goalie_game_stats(game_id):
             shots_against = home_team_shots
             goals_allowed = home_team_score
         
-        # Calculate saves and save percentage
+        # Calculate saves and save percentage (as decimal, e.g., 0.800 for 80%)
         saves = shots_against - goals_allowed
-        save_percentage = (saves / shots_against * 100) if shots_against > 0 else 0.0
+        save_percentage = (saves / shots_against) if shots_against > 0 else 0.0
         
         # Only insert stats if goalie_id is set (registered goalie)
         # Sub goalies (goalie_id is NULL) won't have game stats tracked
@@ -561,8 +592,9 @@ def calculate_goalie_season_stats(goalie_id, season_id):
     shots_against, goals_allowed, saves = result
     
     # Recalculate saves and save percentage (in case of data inconsistencies)
+    # Save percentage is stored as decimal (e.g., 0.800 for 80%)
     saves = shots_against - goals_allowed
-    save_percentage = (saves / shots_against * 100) if shots_against > 0 else 0.0
+    save_percentage = (saves / shots_against) if shots_against > 0 else 0.0
     
     # Get the goalie's current team_id (for display purposes, but stats are aggregated)
     cursor.execute("SELECT team_id FROM goalies WHERE id = %s", (goalie_id,))
