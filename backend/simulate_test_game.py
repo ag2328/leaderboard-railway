@@ -63,32 +63,32 @@ TEST_GAMES = {
         'went_to_shootout': False
     },
     'game2': {
-        'home_team': 'Maple Leafs',
-        'away_team': 'Bruins',
-        'game_date': (date.today() + timedelta(days=1)).isoformat(),  # Next day
+        'home_team': 'Bruins',
+        'away_team': 'Red Wings',
+        'game_date': '2026-01-11',  # Week 1 actual scheduled game
         'goals': [
             # Regulation goals - Bruins (20 shots, 3 goals)
-            {'scorer': 7, 'assists': [14], 'team': 'Bruins', 'period': 1},  # Jacoby F. or Lucas B. assisted by Jayce A.
+            {'scorer': 7, 'assists': [14], 'team': 'Bruins', 'period': 1},  # Jacoby F. assisted by Jayce A.
             {'scorer': 14, 'assists': [42], 'team': 'Bruins', 'period': 2},  # Jayce A. assisted by Nate M.
-            {'scorer': 42, 'assists': [7, 18], 'team': 'Bruins', 'period': 3},  # Nate M. assisted by #7 and Phineas T. or MJ M.
-            # Regulation goals - Maple Leafs (15 shots, 3 goals)
-            {'scorer': 12, 'assists': [19], 'team': 'Maple Leafs', 'period': 1},  # Terry M. assisted by Sebastian R.
-            {'scorer': 19, 'assists': [24, 29], 'team': 'Maple Leafs', 'period': 2},  # Sebastian R. assisted by Julian R. and Jack P.
-            {'scorer': 24, 'assists': [], 'team': 'Maple Leafs', 'period': 3},  # Julian R. unassisted
-            # Overtime goal - Maple Leafs wins
-            {'scorer': 29, 'assists': [12], 'team': 'Maple Leafs', 'period': 4},  # Jack P. assisted by Terry M. (OT)
+            {'scorer': 42, 'assists': [7, 18], 'team': 'Bruins', 'period': 3},  # Nate M. assisted by Jacoby F. and Phineas T.
+            # Regulation goals - Red Wings (15 shots, 3 goals)
+            {'scorer': 8, 'assists': [19], 'team': 'Red Wings', 'period': 1},  # Daelyn L. assisted by Josiah R.
+            {'scorer': 19, 'assists': [13, 77], 'team': 'Red Wings', 'period': 2},  # Josiah R. assisted by Jason G. and Alex W.
+            {'scorer': 77, 'assists': [], 'team': 'Red Wings', 'period': 3},  # Alex W. unassisted
+            # Overtime goal - Bruins wins
+            {'scorer': 18, 'assists': [42], 'team': 'Bruins', 'period': 4},  # Phineas T. assisted by Nate M. (OT)
         ],
         'penalties': [
-            {'player': 18, 'team': 'Bruins', 'period': 2},  # Phineas T. or MJ M.
-            {'player': 24, 'team': 'Maple Leafs', 'period': 2},  # Julian R.
+            {'player': 18, 'team': 'Bruins', 'period': 2},  # Phineas T.
+            {'player': 29, 'team': 'Red Wings', 'period': 2},  # Beau B.
         ],
         'shots': {
             'Bruins': 20,
-            'Maple Leafs': 15
+            'Red Wings': 15
         },
         'scores': {
-            'Bruins': 3,
-            'Maple Leafs': 4  # 3 regulation + 1 OT
+            'Bruins': 4,  # 3 regulation + 1 OT
+            'Red Wings': 3
         },
         'went_to_overtime': True,
         'went_to_shootout': False
