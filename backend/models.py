@@ -309,10 +309,18 @@ def get_team_goalie(team_id, season_id):
     if goalie:
         goalie_dict = dict(goalie)
         # Ensure all stats are integers/floats, not None
-        goalie_dict['shots_against'] = goalie_dict.get('shots_against', 0) or 0
-        goalie_dict['goals_allowed'] = goalie_dict.get('goals_allowed', 0) or 0
-        goalie_dict['saves'] = goalie_dict.get('saves', 0) or 0
-        goalie_dict['save_percentage'] = goalie_dict.get('save_percentage', 0.0) or 0.0
+        shots_against = goalie_dict.get('shots_against', 0) or 0
+        goals_allowed = goalie_dict.get('goals_allowed', 0) or 0
+        
+        # Recalculate saves and save_percentage from shots_against and goals_allowed
+        # (in case database values are incorrect)
+        saves = shots_against - goals_allowed
+        save_percentage = (saves / shots_against * 100) if shots_against > 0 else 0.0
+        
+        goalie_dict['shots_against'] = shots_against
+        goalie_dict['goals_allowed'] = goals_allowed
+        goalie_dict['saves'] = saves
+        goalie_dict['save_percentage'] = round(save_percentage, 3)
         return goalie_dict
     return None
 
