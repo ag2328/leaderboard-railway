@@ -107,12 +107,30 @@ def load_schedule():
             
             if existing_game:
                 # Update existing game
+                needs_update = False
+                update_fields = []
+                update_values = []
+                
                 if existing_game['season_id'] != season_id:
-                    cursor.execute("""
+                    update_fields.append("season_id = %s")
+                    update_values.append(season_id)
+                    needs_update = True
+                
+                # Check if week needs updating
+                cursor.execute("SELECT week FROM games WHERE id = %s", (existing_game['id'],))
+                current_week = cursor.fetchone()['week']
+                if current_week != week:
+                    update_fields.append("week = %s")
+                    update_values.append(week)
+                    needs_update = True
+                
+                if needs_update:
+                    update_values.append(existing_game['id'])
+                    cursor.execute(f"""
                         UPDATE games 
-                        SET season_id = %s
+                        SET {', '.join(update_fields)}, updated_at = NOW()
                         WHERE id = %s
-                    """, (season_id, existing_game['id']))
+                    """, tuple(update_values))
                     updated_count += 1
                     print(f"[UPDATE] {game_date}: {home_team_name} vs {away_team_name} (Week {week})")
                 else:
@@ -129,12 +147,13 @@ def load_schedule():
                         game_date, 
                         season_id, 
                         status,
+                        week,
                         created_at,
                         updated_at
                     )
-                    VALUES (%s, %s, %s, %s, %s, NOW(), NOW())
+                    VALUES (%s, %s, %s, %s, %s, %s, NOW(), NOW())
                     RETURNING id
-                """, (home_team_id, away_team_id, game_date, season_id, status))
+                """, (home_team_id, away_team_id, game_date, season_id, status, week))
                 
                 new_game_id = cursor.fetchone()['id']
                 created_count += 1
