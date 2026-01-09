@@ -279,85 +279,100 @@ export async function renderTeamSchedule(games, teamName, container) {
     const goalieStatsResults = await Promise.all(goalieStatsPromises);
     const goalieStatsMap = new Map(goalieStatsResults.map(r => [r.gameId, r.goalies]));
 
-    // Group games by date
-    const gamesByDate = {};
-    games.forEach(game => {
-        const dateKey = game.game_date ? new Date(game.game_date).toDateString() : 'TBD';
-        if (!gamesByDate[dateKey]) {
-            gamesByDate[dateKey] = [];
-        }
-        gamesByDate[dateKey].push(game);
-    });
-
+    // Games are already sorted by game_date from backend (ORDER BY g.game_date)
+    // Just iterate through them in order and group by date as we go
     let html = '';
-
-    // Render games grouped by date
-    Object.keys(gamesByDate).sort().forEach(dateKey => {
-        const dateGames = gamesByDate[dateKey];
-        const firstGame = dateGames[0];
-        const dateHeader = formatScheduleDate(firstGame.game_date);
+    let currentDateHeader = null;
+    
+    games.forEach((game, index) => {
+        // Extract date for grouping
+        let gameDateKey = null;
+        let dateHeader = null;
         
-        html += `
-            <div class="schedule-date-section">
-                <div class="schedule-date-header">${dateHeader}</div>
-        `;
-
-        dateGames.forEach((game, index) => {
-            const summary = game.summary;
-            const homeTeam = game.home_team_name;
-            const awayTeam = game.away_team_name;
-            const isHome = homeTeam === teamName;
-            
-            let isCompleted = !!summary;
-            let result = '';
-            let finalStatus = '';
-
-            if (summary) {
-                const outcomeType = getGameOutcomeType(summary);
-                if (outcomeType === 'ot') {
-                    finalStatus = 'OT';
-                } else if (outcomeType === 'so') {
-                    finalStatus = 'SO';
-                }
-                
-                if (summary.game_outcome === 'tie') {
-                    result = 'T';
-                } else {
-                    const isWinner = summary.winner_team_id === game[isHome ? 'home_team_id' : 'away_team_id'];
-                    result = isWinner ? 'W' : 'L';
-                }
+        if (game.game_date) {
+            // Extract YYYY-MM-DD from ISO string
+            gameDateKey = game.game_date.includes('T') 
+                ? game.game_date.split('T')[0] 
+                : game.game_date;
+            dateHeader = formatScheduleDate(game.game_date);
+        } else {
+            gameDateKey = 'TBD';
+            dateHeader = 'TBD';
+        }
+        
+        // If this is a new date, start a new date section
+        if (dateHeader !== currentDateHeader) {
+            // Close previous date section if it exists
+            if (currentDateHeader !== null) {
+                html += `</div>`; // Close schedule-date-section
             }
-
-            // Determine winners
-            const homeIsWinner = summary && summary.winner_team_id === game.home_team_id && summary.game_outcome !== 'tie';
-            const awayIsWinner = summary && summary.winner_team_id === game.away_team_id && summary.game_outcome !== 'tie';
-
+            
+            // Start new date section
             html += `
-                <div class="schedule-game-row ${isCompleted ? 'completed' : 'upcoming'}">
-                    <div class="schedule-game-teams">
-                        <div class="schedule-game-team ${homeIsWinner ? 'winner' : ''}">
-                            <img src="${getTeamLogoPath(homeTeam)}" alt="${homeTeam}" 
-                                 class="schedule-team-logo" onerror="this.style.display='none'">
-                            <span class="schedule-team-name">${homeTeam}</span>
-                            ${isCompleted ? `<span class="schedule-team-score">${summary.home_team_score}</span>` : ''}
-                        </div>
-                        <div class="schedule-game-info">
-                            ${isCompleted ? `<span class="schedule-final-status">${finalStatus || 'Final'}</span>` : '<span class="schedule-game-vs">vs</span>'}
-                        </div>
-                        <div class="schedule-game-team ${awayIsWinner ? 'winner' : ''}">
-                            <img src="${getTeamLogoPath(awayTeam)}" alt="${awayTeam}" 
-                                 class="schedule-team-logo" onerror="this.style.display='none'">
-                            <span class="schedule-team-name">${awayTeam}</span>
-                            ${isCompleted ? `<span class="schedule-team-score">${summary.away_team_score}</span>` : ''}
-                        </div>
-                    </div>
-                    ${isCompleted && result ? `<div class="schedule-result-badge ${result.toLowerCase()}">${result}</div>` : ''}
-                </div>
+                <div class="schedule-date-section">
+                    <div class="schedule-date-header">${dateHeader}</div>
             `;
-        });
+            currentDateHeader = dateHeader;
+        }
+        
+        // Render this game
+        const summary = game.summary;
+        const homeTeam = game.home_team_name;
+        const awayTeam = game.away_team_name;
+        const isHome = homeTeam === teamName;
+        
+        let isCompleted = !!summary;
+        let result = '';
+        let finalStatus = '';
 
-        html += `</div>`;
+        if (summary) {
+            const outcomeType = getGameOutcomeType(summary);
+            if (outcomeType === 'ot') {
+                finalStatus = 'OT';
+            } else if (outcomeType === 'so') {
+                finalStatus = 'SO';
+            }
+            
+            if (summary.game_outcome === 'tie') {
+                result = 'T';
+            } else {
+                const isWinner = summary.winner_team_id === game[isHome ? 'home_team_id' : 'away_team_id'];
+                result = isWinner ? 'W' : 'L';
+            }
+        }
+
+        // Determine winners
+        const homeIsWinner = summary && summary.winner_team_id === game.home_team_id && summary.game_outcome !== 'tie';
+        const awayIsWinner = summary && summary.winner_team_id === game.away_team_id && summary.game_outcome !== 'tie';
+
+        html += `
+            <div class="schedule-game-row ${isCompleted ? 'completed' : 'upcoming'}">
+                <div class="schedule-game-teams">
+                    <div class="schedule-game-team ${homeIsWinner ? 'winner' : ''}">
+                        <img src="${getTeamLogoPath(homeTeam)}" alt="${homeTeam}" 
+                             class="schedule-team-logo" onerror="this.style.display='none'">
+                        <span class="schedule-team-name">${homeTeam}</span>
+                        ${isCompleted ? `<span class="schedule-team-score">${summary.home_team_score}</span>` : ''}
+                    </div>
+                    <div class="schedule-game-info">
+                        ${isCompleted ? `<span class="schedule-final-status">${finalStatus || 'Final'}</span>` : '<span class="schedule-game-vs">vs</span>'}
+                    </div>
+                    <div class="schedule-game-team ${awayIsWinner ? 'winner' : ''}">
+                        <img src="${getTeamLogoPath(awayTeam)}" alt="${awayTeam}" 
+                             class="schedule-team-logo" onerror="this.style.display='none'">
+                        <span class="schedule-team-name">${awayTeam}</span>
+                        ${isCompleted ? `<span class="schedule-team-score">${summary.away_team_score}</span>` : ''}
+                    </div>
+                </div>
+                ${isCompleted && result ? `<div class="schedule-result-badge ${result.toLowerCase()}">${result}</div>` : ''}
+            </div>
+        `;
     });
+    
+    // Close the last date section
+    if (currentDateHeader !== null) {
+        html += `</div>`;
+    }
 
     container.innerHTML = html;
 }

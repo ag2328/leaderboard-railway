@@ -10,6 +10,7 @@ Calculates:
 """
 
 import os
+import json
 import psycopg2
 from datetime import datetime
 from models import (
@@ -84,7 +85,8 @@ def calculate_game_summary(game_id):
     # Get events to determine max period and shots
     events = get_game_events(game_id)
     max_period = max([e['period'] for e in events], default=3)
-    went_to_overtime = max_period > 3
+    # Use game record's overtime/shootout flags if set, otherwise calculate from events
+    went_to_overtime = game.get('went_to_overtime', False) or (max_period > 3)
     went_to_shootout = game.get('went_to_shootout', False)
     
     # Determine outcome
@@ -330,32 +332,51 @@ def calculate_team_standings(team_id, season_id):
         goals_scored += team_score
         goals_against += opp_score
         
-        outcome = summary[7]  # game_outcome
+        outcome = summary[7]  # game_outcome (stored from home team's perspective)
         winner_id = summary[8]  # winner_team_id
         
-        if outcome == 'regulation_win' and winner_id == team_id:
-            wins += 1
-            points += 2
-        elif outcome == 'regulation_loss' and winner_id != team_id:
-            losses += 1
-            points += 0
-        elif outcome == 'tie':
+        # Determine if this team won, lost, or tied
+        # outcome is from home team's perspective, so we need to check who actually won
+        if winner_id is None:
+            # Tie game
             ties += 1
             points += 1
-        elif outcome in ['ot_win', 'so_win']:
-            if winner_id == team_id:
-                tiebreaker_wins += 1
+        elif winner_id == team_id:
+            # This team won
+            if outcome in ['regulation_win', 'regulation_loss']:
+                # Regulation win (outcome could be 'regulation_win' if home won, or 'regulation_loss' if away won)
+                wins += 1
                 points += 2
-            else:
-                tiebreaker_losses += 1
-                points += 1
-        elif outcome in ['ot_loss', 'so_loss']:
-            if winner_id == team_id:
-                tiebreaker_losses += 1
-                points += 1
-            else:
-                tiebreaker_wins += 1
-                points += 2
+            elif outcome in ['ot_win', 'ot_loss']:
+                # Overtime win - game was tied at end of regulation, then this team won in OT
+                ties += 1  # Count as a tie (regulation ended in tie)
+                wins += 1  # Also count as a win (won in OT)
+                tiebreaker_wins += 1  # Track for tiebreaker purposes
+                points += 2  # 1 for tie + 1 for win
+            elif outcome in ['so_win', 'so_loss']:
+                # Shootout win - game was tied at end of regulation/OT, then this team won in SO
+                ties += 1  # Count as a tie (regulation/OT ended in tie)
+                wins += 1  # Also count as a win (won in SO)
+                tiebreaker_wins += 1  # Track for tiebreaker purposes
+                points += 2  # 1 for tie + 1 for win
+        else:
+            # This team lost
+            if outcome in ['regulation_win', 'regulation_loss']:
+                # Regulation loss
+                losses += 1
+                points += 0
+            elif outcome in ['ot_win', 'ot_loss']:
+                # Overtime loss - game was tied at end of regulation, then this team lost in OT
+                ties += 1  # Count as a tie (regulation ended in tie)
+                losses += 1  # Also count as a loss (lost in OT)
+                tiebreaker_losses += 1  # Track for tiebreaker purposes
+                points += 1  # 1 for tie + 0 for loss
+            elif outcome in ['so_win', 'so_loss']:
+                # Shootout loss - game was tied at end of regulation/OT, then this team lost in SO
+                ties += 1  # Count as a tie (regulation/OT ended in tie)
+                losses += 1  # Also count as a loss (lost in SO)
+                tiebreaker_losses += 1  # Track for tiebreaker purposes
+                points += 1  # 1 for tie + 0 for loss
     
     # Insert or update standings
     cursor.execute("""
@@ -449,12 +470,14 @@ def calculate_player_season_stats(player_id, season_id):
     goals = cursor.fetchone()[0]
     
     # Count assists (from goal events' details JSONB)
+    # Check if player_id is in the assists array using JSONB operators
     cursor.execute("""
         SELECT COUNT(*) FROM events
         WHERE game_id = ANY(%s)
           AND event_type = 'goal'
-          AND details::text LIKE %s
-    """, (game_ids, f'%"assists"%[{player_id}]%'))
+          AND details ? 'assists'
+          AND details->'assists' @> %s::jsonb
+    """, (game_ids, json.dumps([player_id])))
     assists = cursor.fetchone()[0]
     
     # Count penalties
