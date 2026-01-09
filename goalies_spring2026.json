@@ -1,0 +1,50 @@
+{
+  "season": "Spring 2026",
+  "lastUpdated": "2026-01-07T11:33:53.427753Z",
+  "goalies": [
+    {
+      "customer_id": "21980",
+      "registration_id": "41761",
+      "first_name": "Phillip",
+      "last_name": "Wiggins",
+      "full_name": "Phillip Wiggins",
+      "team_name": "Maple Leafs",
+      "jersey_number": "2",
+      "is_goalie": true,
+      "email": "popeironhead@gmail.com"
+    },
+    {
+      "customer_id": "21632",
+      "registration_id": "41753",
+      "first_name": "London",
+      "last_name": "Claxton",
+      "full_name": "London Claxton",
+      "team_name": "Bruins",
+      "jersey_number": "8",
+      "is_goalie": true,
+      "email": ""
+    },
+    {
+      "customer_id": "11911",
+      "registration_id": "41795",
+      "first_name": "Briar",
+      "last_name": "Peeples",
+      "full_name": "Briar Peeples",
+      "team_name": "Red Wings",
+      "jersey_number": "57",
+      "is_goalie": true,
+      "email": "dragonflyqueen2@yahoo.com"
+    },
+    {
+      "customer_id": "597",
+      "registration_id": "41754",
+      "first_name": "Olivia",
+      "last_name": "Baker",
+      "full_name": "Olivia Baker",
+      "team_name": "Canadiens",
+      "jersey_number": "32",
+      "is_goalie": true,
+      "email": "jeff@behrconstruction.com"
+    }
+  ]
+}

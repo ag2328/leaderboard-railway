@@ -402,21 +402,22 @@ body {
     color: var(--text-secondary);
 }
 
+.schedule-game-row.completed,
 .schedule-game-row.upcoming {
     padding: var(--spacing-sm);
 }
 
-.schedule-game-row.upcoming .schedule-game-team {
+.schedule-game-row .schedule-game-team {
     opacity: 0.85;
     gap: var(--spacing-xs);
 }
 
-.schedule-game-row.upcoming .schedule-team-logo {
+.schedule-game-row .schedule-team-logo {
     width: 44px;
     height: 44px;
 }
 
-.schedule-game-row.upcoming .schedule-team-name {
+.schedule-game-row .schedule-team-name {
     font-size: 0.85rem;
 }
 

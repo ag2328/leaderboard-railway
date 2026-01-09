@@ -332,6 +332,16 @@ export async function renderTeamSchedule(games, teamName, container) {
             }
         }
         
+        // Format score with OT/SO indicator if applicable
+        let teamScoreDisplay = teamScore;
+        let opponentScoreDisplay = opponentScore;
+        if (isCompleted && (finalStatus === 'OT' || finalStatus === 'SO')) {
+            // Show OT/SO indicator next to the score (e.g., "2-3 (SO)")
+            const otSoIndicator = finalStatus === 'SO' ? '(SO)' : '(OT)';
+            teamScoreDisplay = `${teamScore} ${otSoIndicator}`;
+            opponentScoreDisplay = `${opponentScore} ${otSoIndicator}`;
+        }
+        
         html += `
             <div class="schedule-game-row ${isCompleted ? 'completed' : 'upcoming'}">
                 <div class="schedule-game-teams">
@@ -339,16 +349,16 @@ export async function renderTeamSchedule(games, teamName, container) {
                         <img src="${getTeamLogoPath(teamName)}" alt="${teamName}" 
                              class="schedule-team-logo" onerror="this.style.display='none'">
                         <span class="schedule-team-name">${teamName}</span>
-                        ${isCompleted ? `<span class="schedule-team-score">${teamScore}</span>` : ''}
+                        ${isCompleted ? `<span class="schedule-team-score">${teamScoreDisplay}</span>` : ''}
                     </div>
                     <div class="schedule-game-info">
-                        ${isCompleted ? `<span class="schedule-final-status">${finalStatus || 'Final'}</span>` : '<span class="schedule-game-vs">vs</span>'}
+                        ${isCompleted ? `<span class="schedule-final-status">Final</span>` : '<span class="schedule-game-vs">vs</span>'}
                     </div>
                     <div class="schedule-game-team">
                         <img src="${getTeamLogoPath(opponent)}" alt="${opponent}" 
                              class="schedule-team-logo" onerror="this.style.display='none'">
                         <span class="schedule-team-name">${opponent}</span>
-                        ${isCompleted ? `<span class="schedule-team-score">${opponentScore}</span>` : ''}
+                        ${isCompleted ? `<span class="schedule-team-score">${opponentScoreDisplay}</span>` : ''}
                     </div>
                 </div>
                 ${isCompleted && result ? `<div class="schedule-result-badge ${result.toLowerCase()}">${result}</div>` : ''}

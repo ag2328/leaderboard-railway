@@ -1,0 +1,532 @@
+{
+  "season": "Spring 2026",
+  "lastUpdated": "2026-01-07T11:37:22.693273Z",
+  "players": [
+    {
+      "customer_id": "530",
+      "registration_id": "41792",
+      "first_name": "Terry",
+      "last_name": "Michii",
+      "full_name": "Terry Michii",
+      "team_name": "Maple Leafs",
+      "jersey_number": "12",
+      "email": "michiiyc@gmail.com"
+    },
+    {
+      "customer_id": "1246",
+      "registration_id": "41805",
+      "first_name": "Joshua",
+      "last_name": "Torres",
+      "full_name": "Joshua Torres",
+      "team_name": "Maple Leafs",
+      "jersey_number": "66",
+      "email": "Aneuroticrn@aol.com"
+    },
+    {
+      "customer_id": "2281",
+      "registration_id": "41775",
+      "first_name": "Noah",
+      "last_name": "Gaitan",
+      "full_name": "Noah Gaitan",
+      "team_name": "Maple Leafs",
+      "jersey_number": "28",
+      "email": "Andrewggaitan@gmail.com"
+    },
+    {
+      "customer_id": "6348",
+      "registration_id": "41787",
+      "first_name": "Nathan",
+      "last_name": "Liu",
+      "full_name": "Nathan Liu",
+      "team_name": "Maple Leafs",
+      "jersey_number": "15",
+      "email": "chujie871@hotmail.com"
+    },
+    {
+      "customer_id": "11881",
+      "registration_id": "41773",
+      "first_name": "Elijah",
+      "last_name": "Friz",
+      "full_name": "Elijah Friz",
+      "team_name": "Maple Leafs",
+      "jersey_number": "27",
+      "email": "thelittleblackcat@gmail.com"
+    },
+    {
+      "customer_id": "14739",
+      "registration_id": "41769",
+      "first_name": "Preston",
+      "last_name": "Cook",
+      "full_name": "Preston Cook",
+      "team_name": "Maple Leafs",
+      "jersey_number": "34",
+      "email": "danny@acdcapparel.com"
+    },
+    {
+      "customer_id": "15806",
+      "registration_id": "41767",
+      "first_name": "Ryan",
+      "last_name": "Cohne",
+      "full_name": "Ryan Cohne",
+      "team_name": "Maple Leafs",
+      "jersey_number": "6",
+      "email": ""
+    },
+    {
+      "customer_id": "16304",
+      "registration_id": "41770",
+      "first_name": "Julian",
+      "last_name": "Dertavitian",
+      "full_name": "Julian Dertavitian",
+      "team_name": "Maple Leafs",
+      "jersey_number": "72",
+      "email": ""
+    },
+    {
+      "customer_id": "16514",
+      "registration_id": "41797",
+      "first_name": "Austin",
+      "last_name": "P.",
+      "full_name": "Austin P.",
+      "team_name": "Maple Leafs",
+      "jersey_number": "",
+      "email": ""
+    },
+    {
+      "customer_id": "17271",
+      "registration_id": "41800",
+      "first_name": "Sebastian",
+      "last_name": "Rivera",
+      "full_name": "Sebastian Rivera",
+      "team_name": "Maple Leafs",
+      "jersey_number": "19",
+      "email": ""
+    },
+    {
+      "customer_id": "17272",
+      "registration_id": "41799",
+      "first_name": "Julian",
+      "last_name": "Rivera",
+      "full_name": "Julian Rivera",
+      "team_name": "Maple Leafs",
+      "jersey_number": "24",
+      "email": ""
+    },
+    {
+      "customer_id": "18788",
+      "registration_id": "41796",
+      "first_name": "Jack",
+      "last_name": "Pollard",
+      "full_name": "Jack Pollard",
+      "team_name": "Maple Leafs",
+      "jersey_number": "29",
+      "email": ""
+    },
+    {
+      "customer_id": "19785",
+      "registration_id": "41757",
+      "first_name": "Theodore",
+      "last_name": "R.",
+      "full_name": "Theodore R.",
+      "team_name": "Maple Leafs",
+      "jersey_number": "",
+      "email": ""
+    },
+    {
+      "customer_id": "942",
+      "registration_id": "41789",
+      "first_name": "Nate",
+      "last_name": "McPhie",
+      "full_name": "Nate McPhie",
+      "team_name": "Bruins",
+      "jersey_number": "42",
+      "email": "beccart1229@gmail.com"
+    },
+    {
+      "customer_id": "2129",
+      "registration_id": "41794",
+      "first_name": "Dominic",
+      "last_name": "Murietta",
+      "full_name": "Dominic Murietta",
+      "team_name": "Bruins",
+      "jersey_number": "25",
+      "email": "Akpshera@aol.com"
+    },
+    {
+      "customer_id": "2161",
+      "registration_id": "41760",
+      "first_name": "Phineas",
+      "last_name": "Tuchman",
+      "full_name": "Phineas Tuchman",
+      "team_name": "Bruins",
+      "jersey_number": "18",
+      "email": "davidtuckman@gmail.com"
+    },
+    {
+      "customer_id": "2849",
+      "registration_id": "41758",
+      "first_name": "Kaiden",
+      "last_name": "Sanchez",
+      "full_name": "Kaiden Sanchez",
+      "team_name": "Bruins",
+      "jersey_number": "61",
+      "email": "jamiesanchez24@gmail.com"
+    },
+    {
+      "customer_id": "7276",
+      "registration_id": "41766",
+      "first_name": "Gustavo",
+      "last_name": "Carrillo",
+      "full_name": "Gustavo Carrillo",
+      "team_name": "Bruins",
+      "jersey_number": "83",
+      "email": "Cmcl1975@gmail.com"
+    },
+    {
+      "customer_id": "9541",
+      "registration_id": "41776",
+      "first_name": "Charles",
+      "last_name": "G.",
+      "full_name": "Charles G.",
+      "team_name": "Bruins",
+      "jersey_number": "",
+      "email": "dk1007@gmail.com"
+    },
+    {
+      "customer_id": "10048",
+      "registration_id": "41788",
+      "first_name": "Jadiel",
+      "last_name": "Lopez-Harrison",
+      "full_name": "Jadiel Lopez-Harrison",
+      "team_name": "Bruins",
+      "jersey_number": "8",
+      "email": "SHERMANLEEE@SBCGLOBAL.NET"
+    },
+    {
+      "customer_id": "10051",
+      "registration_id": "41771",
+      "first_name": "Jacoby",
+      "last_name": "Fernandez",
+      "full_name": "Jacoby Fernandez",
+      "team_name": "Bruins",
+      "jersey_number": "7",
+      "email": ""
+    },
+    {
+      "customer_id": "14027",
+      "registration_id": "41774",
+      "first_name": "Dominic",
+      "last_name": "Funicello",
+      "full_name": "Dominic Funicello",
+      "team_name": "Bruins",
+      "jersey_number": "96",
+      "email": ""
+    },
+    {
+      "customer_id": "14453",
+      "registration_id": "41801",
+      "first_name": "Javier",
+      "last_name": "Rodriguez",
+      "full_name": "Javier Rodriguez",
+      "team_name": "Bruins",
+      "jersey_number": "73",
+      "email": ""
+    },
+    {
+      "customer_id": "16934",
+      "registration_id": "41793",
+      "first_name": "MJ",
+      "last_name": "M.",
+      "full_name": "MJ M.",
+      "team_name": "Bruins",
+      "jersey_number": "",
+      "email": "tiana.mitchell@gmail.com"
+    },
+    {
+      "customer_id": "20585",
+      "registration_id": "41763",
+      "first_name": "Lucas",
+      "last_name": "Baker",
+      "full_name": "Lucas Baker",
+      "team_name": "Bruins",
+      "jersey_number": "7",
+      "email": ""
+    },
+    {
+      "customer_id": "21591",
+      "registration_id": "41762",
+      "first_name": "Jayce",
+      "last_name": "Andalon",
+      "full_name": "Jayce Andalon",
+      "team_name": "Bruins",
+      "jersey_number": "14",
+      "email": ""
+    },
+    {
+      "customer_id": "300",
+      "registration_id": "41777",
+      "first_name": "Jason",
+      "last_name": "Groller",
+      "full_name": "Jason Groller",
+      "team_name": "Red Wings",
+      "jersey_number": "13",
+      "email": "lauramsteiner@hotmail.com"
+    },
+    {
+      "customer_id": "1396",
+      "registration_id": "41785",
+      "first_name": "Daelyn",
+      "last_name": "Levine",
+      "full_name": "Daelyn Levine",
+      "team_name": "Red Wings",
+      "jersey_number": "8",
+      "email": "target563@gmail.com"
+    },
+    {
+      "customer_id": "2880",
+      "registration_id": "41798",
+      "first_name": "Josiah",
+      "last_name": "Ramirez",
+      "full_name": "Josiah Ramirez",
+      "team_name": "Red Wings",
+      "jersey_number": "19",
+      "email": "kramirez6776@gmail.com"
+    },
+    {
+      "customer_id": "6922",
+      "registration_id": "41806",
+      "first_name": "Alex",
+      "last_name": "Westrup",
+      "full_name": "Alex Westrup",
+      "team_name": "Red Wings",
+      "jersey_number": "77",
+      "email": "lauraale@gmail.com"
+    },
+    {
+      "customer_id": "11060",
+      "registration_id": "41786",
+      "first_name": "Henry",
+      "last_name": "L.",
+      "full_name": "Henry L.",
+      "team_name": "Red Wings",
+      "jersey_number": "",
+      "email": "dliffman@gmail.com"
+    },
+    {
+      "customer_id": "12124",
+      "registration_id": "41765",
+      "first_name": "Ramsay",
+      "last_name": "Campbell",
+      "full_name": "Ramsay Campbell",
+      "team_name": "Red Wings",
+      "jersey_number": "67",
+      "email": "fitlyke@gmail.com"
+    },
+    {
+      "customer_id": "12820",
+      "registration_id": "41764",
+      "first_name": "Beau",
+      "last_name": "Beigel",
+      "full_name": "Beau Beigel",
+      "team_name": "Red Wings",
+      "jersey_number": "29",
+      "email": "joelle@atonaltheory.com"
+    },
+    {
+      "customer_id": "13608",
+      "registration_id": "41822",
+      "first_name": "Kitana",
+      "last_name": "Nguyen",
+      "full_name": "Kitana Nguyen",
+      "team_name": "Red Wings",
+      "jersey_number": "95",
+      "email": "luanhnguyen@gmail.com"
+    },
+    {
+      "customer_id": "14959",
+      "registration_id": "41756",
+      "first_name": "Austin",
+      "last_name": "Ortuno",
+      "full_name": "Austin Ortuno",
+      "team_name": "Red Wings",
+      "jersey_number": "13",
+      "email": ""
+    },
+    {
+      "customer_id": "15534",
+      "registration_id": "41784",
+      "first_name": "Jax",
+      "last_name": "Leonard",
+      "full_name": "Jax Leonard",
+      "team_name": "Red Wings",
+      "jersey_number": "25",
+      "email": ""
+    },
+    {
+      "customer_id": "19629",
+      "registration_id": "41768",
+      "first_name": "Genevieve",
+      "last_name": "C.",
+      "full_name": "Genevieve C.",
+      "team_name": "Red Wings",
+      "jersey_number": "",
+      "email": ""
+    },
+    {
+      "customer_id": "20920",
+      "registration_id": "41802",
+      "first_name": "Addison",
+      "last_name": "Sandoval",
+      "full_name": "Addison Sandoval",
+      "team_name": "Red Wings",
+      "jersey_number": "31",
+      "email": "navarro31@aol.com"
+    },
+    {
+      "customer_id": "21647",
+      "registration_id": "41759",
+      "first_name": "Matthew",
+      "last_name": "Simmons",
+      "full_name": "Matthew Simmons",
+      "team_name": "Red Wings",
+      "jersey_number": "",
+      "email": "tsimm5202@gmail.com"
+    },
+    {
+      "customer_id": "222",
+      "registration_id": "41755",
+      "first_name": "Eithan",
+      "last_name": "Miranda",
+      "full_name": "Eithan Miranda",
+      "team_name": "Canadiens",
+      "jersey_number": "4",
+      "email": "Coachheidihockey@gmail.com"
+    },
+    {
+      "customer_id": "566",
+      "registration_id": "41772",
+      "first_name": "Jake",
+      "last_name": "Fife",
+      "full_name": "Jake Fife",
+      "team_name": "Canadiens",
+      "jersey_number": "22",
+      "email": "fifejen@gmail.com"
+    },
+    {
+      "customer_id": "1367",
+      "registration_id": "41790",
+      "first_name": "Brady",
+      "last_name": "Mehegan",
+      "full_name": "Brady Mehegan",
+      "team_name": "Canadiens",
+      "jersey_number": "18",
+      "email": ""
+    },
+    {
+      "customer_id": "2082",
+      "registration_id": "41782",
+      "first_name": "Caleb",
+      "last_name": "K.",
+      "full_name": "Caleb K.",
+      "team_name": "Canadiens",
+      "jersey_number": "",
+      "email": "david.j.kopp@gmail.com"
+    },
+    {
+      "customer_id": "3557",
+      "registration_id": "41781",
+      "first_name": "Giovanni",
+      "last_name": "K.",
+      "full_name": "Giovanni K.",
+      "team_name": "Canadiens",
+      "jersey_number": "",
+      "email": "freddjr1@gmail.com"
+    },
+    {
+      "customer_id": "6281",
+      "registration_id": "41791",
+      "first_name": "Marley",
+      "last_name": "Mehegan",
+      "full_name": "Marley Mehegan",
+      "team_name": "Canadiens",
+      "jersey_number": "15",
+      "email": ""
+    },
+    {
+      "customer_id": "9137",
+      "registration_id": "41779",
+      "first_name": "Owen",
+      "last_name": "Heckathorn",
+      "full_name": "Owen Heckathorn",
+      "team_name": "Canadiens",
+      "jersey_number": "21",
+      "email": ""
+    },
+    {
+      "customer_id": "10041",
+      "registration_id": "41804",
+      "first_name": "Raffay",
+      "last_name": "Sheikh",
+      "full_name": "Raffay Sheikh",
+      "team_name": "Canadiens",
+      "jersey_number": "89",
+      "email": "sheikhus4@gmail.com"
+    },
+    {
+      "customer_id": "10117",
+      "registration_id": "41803",
+      "first_name": "Landon",
+      "last_name": "S.",
+      "full_name": "Landon S.",
+      "team_name": "Canadiens",
+      "jersey_number": "",
+      "email": "crystalschoelen@gmail.com"
+    },
+    {
+      "customer_id": "11852",
+      "registration_id": "41783",
+      "first_name": "Cristian",
+      "last_name": "Krynsky",
+      "full_name": "Cristian Krynsky",
+      "team_name": "Canadiens",
+      "jersey_number": "2",
+      "email": ""
+    },
+    {
+      "customer_id": "14400",
+      "registration_id": "41780",
+      "first_name": "Joel",
+      "last_name": "Jackson",
+      "full_name": "Joel Jackson",
+      "team_name": "Canadiens",
+      "jersey_number": "",
+      "email": ""
+    },
+    {
+      "customer_id": "18728",
+      "registration_id": "41778",
+      "first_name": "Luca",
+      "last_name": "Hagstrom",
+      "full_name": "Luca Hagstrom",
+      "team_name": "Canadiens",
+      "jersey_number": "23",
+      "email": ""
+    },
+    {
+      "customer_id": "18791",
+      "registration_id": "41807",
+      "first_name": "Jack",
+      "last_name": "Wiseman",
+      "full_name": "Jack Wiseman",
+      "team_name": "Canadiens",
+      "jersey_number": "37",
+      "email": "shawnawiseman@gmail.com"
+    }
+  ],
+  "merged": {
+    "matched": 38,
+    "unmatched": 18,
+    "source": "Google Sheets + DaySmart API",
+    "goalies_extracted": 4
+  }
+}

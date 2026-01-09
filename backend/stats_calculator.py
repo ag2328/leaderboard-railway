@@ -37,12 +37,16 @@ def calculate_points(game_outcome, team_id, winner_team_id):
     """
     Calculate points for a team based on game outcome.
     
-    Points system:
+    Points system (matching Fall 2025 formula: =2*B3+1*D3+1*E3):
     - Regulation win: 2 points
     - Regulation loss: 0 points
-    - Tie: 1 point each
-    - OT/SO win: 2 points (1 for tie + 1 for win)
-    - OT/SO loss: 1 point (1 for tie, 0 for loss)
+    - Regulation tie: 1 point each
+    - OT/SO win: 2 points total (1 for tie + 1 for win)
+      - Counted in ties column (1 point)
+      - Counted in tiebreaker wins column (1 additional point)
+    - OT/SO loss: 1 point total (1 for tie, 0 for loss)
+      - Counted in ties column (1 point)
+      - Tiebreaker losses column gives 0 points
     """
     if game_outcome == 'regulation_win':
         return 2 if team_id == winner_team_id else 0
@@ -51,9 +55,9 @@ def calculate_points(game_outcome, team_id, winner_team_id):
     elif game_outcome == 'tie':
         return 1
     elif game_outcome in ['ot_win', 'so_win']:
-        return 2 if team_id == winner_team_id else 1
+        return 2 if team_id == winner_team_id else 1  # Winner: 1 (tie) + 1 (win) = 2, Loser: 1 (tie)
     elif game_outcome in ['ot_loss', 'so_loss']:
-        return 1 if team_id == winner_team_id else 2
+        return 1 if team_id == winner_team_id else 2  # Loser: 1 (tie), Winner: 2 (tie + win)
     return 0
 
 
@@ -338,7 +342,7 @@ def calculate_team_standings(team_id, season_id):
         # Determine if this team won, lost, or tied
         # outcome is from home team's perspective, so we need to check who actually won
         if winner_id is None:
-            # Tie game
+            # Regulation tie game (NOT OT/SO games)
             ties += 1
             points += 1
         elif winner_id == team_id:
@@ -347,36 +351,26 @@ def calculate_team_standings(team_id, season_id):
                 # Regulation win (outcome could be 'regulation_win' if home won, or 'regulation_loss' if away won)
                 wins += 1
                 points += 2
-            elif outcome in ['ot_win', 'ot_loss']:
-                # Overtime win - game was tied at end of regulation, then this team won in OT
-                ties += 1  # Count as a tie (regulation ended in tie)
-                wins += 1  # Also count as a win (won in OT)
-                tiebreaker_wins += 1  # Track for tiebreaker purposes
-                points += 2  # 1 for tie + 1 for win
-            elif outcome in ['so_win', 'so_loss']:
-                # Shootout win - game was tied at end of regulation/OT, then this team won in SO
-                ties += 1  # Count as a tie (regulation/OT ended in tie)
-                wins += 1  # Also count as a win (won in SO)
-                tiebreaker_wins += 1  # Track for tiebreaker purposes
-                points += 2  # 1 for tie + 1 for win
+            elif outcome in ['ot_win', 'ot_loss', 'so_win', 'so_loss']:
+                # OT/SO win - per Fall 2025 formula: both teams get 1 point for tie, winner gets +1 for win
+                # Counted in ties column (1 point) + tiebreaker wins column (1 point) = 2 points total
+                ties += 1  # Count as a tie (game was tied at end of regulation)
+                wins += 1  # Count as a win (won in OT/SO)
+                tiebreaker_wins += 1  # Track for tiebreaker purposes (additional point)
+                points += 2  # 1 for tie + 1 for win = 2 points total
         else:
             # This team lost
             if outcome in ['regulation_win', 'regulation_loss']:
                 # Regulation loss
                 losses += 1
                 points += 0
-            elif outcome in ['ot_win', 'ot_loss']:
-                # Overtime loss - game was tied at end of regulation, then this team lost in OT
-                ties += 1  # Count as a tie (regulation ended in tie)
-                losses += 1  # Also count as a loss (lost in OT)
-                tiebreaker_losses += 1  # Track for tiebreaker purposes
-                points += 1  # 1 for tie + 0 for loss
-            elif outcome in ['so_win', 'so_loss']:
-                # Shootout loss - game was tied at end of regulation/OT, then this team lost in SO
-                ties += 1  # Count as a tie (regulation/OT ended in tie)
-                losses += 1  # Also count as a loss (lost in SO)
-                tiebreaker_losses += 1  # Track for tiebreaker purposes
-                points += 1  # 1 for tie + 0 for loss
+            elif outcome in ['ot_win', 'ot_loss', 'so_win', 'so_loss']:
+                # OT/SO loss - per Fall 2025 formula: both teams get 1 point for tie, loser gets 0 additional
+                # Counted in ties column (1 point) + 0 from tiebreaker losses = 1 point total
+                ties += 1  # Count as a tie (game was tied at end of regulation)
+                losses += 1  # Count as a loss (lost in OT/SO)
+                tiebreaker_losses += 1  # Track for tiebreaker purposes (but gives 0 points)
+                points += 1  # 1 for tie + 0 for loss = 1 point total
     
     # Insert or update standings
     cursor.execute("""
