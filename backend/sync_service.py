@@ -204,10 +204,25 @@ def update_aggregated_stats_for_game(game_id, season_id):
     calculate_team_standings(away_team_id, season_id)
     
     # Get all players who participated in this game
+    # This includes:
+    # 1. Players with player_id in events (scorers, penalized players)
+    # 2. Players who appear in assists arrays in goal event details
     cursor.execute("""
         SELECT DISTINCT player_id FROM events
         WHERE game_id = %s AND player_id IS NOT NULL
-    """, (game_id,))
+        
+        UNION
+        
+        SELECT DISTINCT (value::text)::INTEGER as player_id
+        FROM events,
+             jsonb_array_elements(details->'assists') as value
+        WHERE game_id = %s
+          AND event_type = 'goal'
+          AND details ? 'assists'
+          AND details->'assists' IS NOT NULL
+          AND jsonb_typeof(details->'assists') = 'array'
+          AND jsonb_array_length(details->'assists') > 0
+    """, (game_id, game_id))
     player_ids = [row[0] for row in cursor.fetchall()]
     
     # Update player stats
