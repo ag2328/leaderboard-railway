@@ -15,7 +15,7 @@ And admin endpoints for:
 
 import os
 from datetime import datetime, date
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, Blueprint, jsonify, request, send_from_directory
 from flask_cors import CORS
 from models import (
     get_active_season, get_season_by_name,
@@ -42,8 +42,11 @@ FRONTEND_DIR = os.path.join(BASE_DIR, 'frontend')
 
 app = Flask(__name__, 
             static_folder=FRONTEND_DIR,
-            static_url_path='')
+            static_url_path='/spring2026')
 CORS(app)  # Enable CORS for frontend
+
+# Create Blueprint with /spring2026 prefix
+main_bp = Blueprint('main', __name__)
 
 # Custom JSON encoder to handle datetime/date objects
 def convert_datetime_to_iso(obj):
@@ -57,7 +60,7 @@ def convert_datetime_to_iso(obj):
     return obj
 
 # Add request logging middleware (only log in debug mode to reduce noise)
-@app.before_request
+@main_bp.before_request
 def log_request_info():
     if os.getenv('FLASK_DEBUG', 'false').lower() == 'true':
         print(f"[Request] {request.method} {request.path}", flush=True)
@@ -84,21 +87,12 @@ def get_season_from_request():
 # Public API Endpoints
 # ============================================================================
 
-@app.route('/', methods=['GET'])
+@main_bp.route('/', methods=['GET'])
 def root():
     """Serve the frontend index.html."""
     return send_from_directory(FRONTEND_DIR, 'index.html')
 
-@app.route('/health', methods=['GET'])
-def health_check():
-    """Health check endpoint for Railway (separate from frontend)."""
-    return jsonify({
-        'status': 'ok',
-        'service': 'leaderboard-api',
-        'version': '1.0.0'
-    }), 200
-
-@app.route('/api/health', methods=['GET'])
+@main_bp.route('/api/health', methods=['GET'])
 def health():
     """Health check endpoint with database connection test."""
     try:
@@ -155,7 +149,7 @@ def health():
         }), 500
 
 
-@app.route('/api/test-db', methods=['GET'])
+@main_bp.route('/api/test-db', methods=['GET'])
 def test_database():
     """Test database connection and check for required tables."""
     results = {
@@ -227,7 +221,7 @@ def test_database():
         return jsonify(results), 500
 
 
-@app.route('/api/standings', methods=['GET'])
+@main_bp.route('/api/standings', methods=['GET'])
 def get_standings():
     """Get team standings for a season."""
     season = get_season_from_request()
@@ -241,14 +235,14 @@ def get_standings():
     })
 
 
-@app.route('/api/teams', methods=['GET'])
+@main_bp.route('/api/teams', methods=['GET'])
 def get_teams():
     """Get all teams."""
     teams = get_all_teams()
     return jsonify({'teams': teams})
 
 
-@app.route('/api/teams/<int:team_id>', methods=['GET'])
+@main_bp.route('/api/teams/<int:team_id>', methods=['GET'])
 def get_team(team_id):
     """Get a specific team."""
     team = get_team_by_id(team_id)
@@ -257,7 +251,7 @@ def get_team(team_id):
     return jsonify({'team': team})
 
 
-@app.route('/api/teams/<int:team_id>/games', methods=['GET'])
+@main_bp.route('/api/teams/<int:team_id>/games', methods=['GET'])
 def get_team_games_endpoint(team_id):
     """Get all games for a team in a season."""
     season = get_season_from_request()
@@ -283,7 +277,7 @@ def get_team_games_endpoint(team_id):
     })
 
 
-@app.route('/api/teams/<int:team_id>/players', methods=['GET'])
+@main_bp.route('/api/teams/<int:team_id>/players', methods=['GET'])
 def get_team_players_endpoint(team_id):
     """Get player statistics for a team in a season."""
     season = get_season_from_request()
@@ -298,7 +292,7 @@ def get_team_players_endpoint(team_id):
     })
 
 
-@app.route('/api/teams/<int:team_id>/goalie', methods=['GET'])
+@main_bp.route('/api/teams/<int:team_id>/goalie', methods=['GET'])
 def get_team_goalie_endpoint(team_id):
     """Get goalie statistics for a team in a season."""
     season = get_season_from_request()
@@ -316,7 +310,7 @@ def get_team_goalie_endpoint(team_id):
     })
 
 
-@app.route('/api/games/<int:game_id>', methods=['GET'])
+@main_bp.route('/api/games/<int:game_id>', methods=['GET'])
 def get_game(game_id):
     """Get a specific game."""
     game = get_game_by_id(game_id)
@@ -331,7 +325,7 @@ def get_game(game_id):
     return jsonify({'game': game_data})
 
 
-@app.route('/api/games/<int:game_id>/summary', methods=['GET'])
+@main_bp.route('/api/games/<int:game_id>/summary', methods=['GET'])
 def get_game_summary_endpoint(game_id):
     """Get game summary for a game."""
     summary = get_game_summary(game_id)
@@ -340,7 +334,7 @@ def get_game_summary_endpoint(game_id):
     return jsonify({'summary': summary})
 
 
-@app.route('/api/games/<int:game_id>/goalies', methods=['GET'])
+@main_bp.route('/api/games/<int:game_id>/goalies', methods=['GET'])
 def get_game_goalies_endpoint(game_id):
     """Get goalie stats for a specific game."""
     goalies = get_game_goalie_stats(game_id)
@@ -349,7 +343,7 @@ def get_game_goalies_endpoint(game_id):
     return jsonify({'goalies': goalies})
 
 
-@app.route('/api/games/<int:game_id>/periods', methods=['GET'])
+@main_bp.route('/api/games/<int:game_id>/periods', methods=['GET'])
 def get_game_periods_endpoint(game_id):
     """Get period-by-period stats for a game."""
     period_stats = get_game_period_stats(game_id)
@@ -362,7 +356,7 @@ def get_game_periods_endpoint(game_id):
 # Admin API Endpoints (Protected - add auth later if needed)
 # ============================================================================
 
-@app.route('/api/admin/sync-games', methods=['POST'])
+@main_bp.route('/api/admin/sync-games', methods=['POST'])
 def sync_games():
     """Manually trigger processing of pending games."""
     season = get_season_from_request()
@@ -373,7 +367,7 @@ def sync_games():
     return jsonify(result)
 
 
-@app.route('/api/admin/process-game/<int:game_id>', methods=['POST'])
+@main_bp.route('/api/admin/process-game/<int:game_id>', methods=['POST'])
 def process_single_game_endpoint(game_id):
     """Process a single game by ID (called by scorekeepr_lite after locking)."""
     result = process_single_game(game_id)
@@ -383,7 +377,7 @@ def process_single_game_endpoint(game_id):
     return jsonify(result)
 
 
-@app.route('/api/admin/sync-status', methods=['GET'])
+@main_bp.route('/api/admin/sync-status', methods=['GET'])
 def sync_status():
     """Get current sync status."""
     season = get_season_from_request()
@@ -394,7 +388,7 @@ def sync_status():
     return jsonify(status)
 
 
-@app.route('/api/admin/manual-sync', methods=['POST'])
+@main_bp.route('/api/admin/manual-sync', methods=['POST'])
 def manual_sync():
     """Manually trigger stats update for processed games."""
     season = get_season_from_request()
@@ -405,7 +399,7 @@ def manual_sync():
     return jsonify(result)
 
 
-@app.route('/api/admin/recalculate-stats', methods=['POST'])
+@main_bp.route('/api/admin/recalculate-stats', methods=['POST'])
 def recalculate_stats():
     """Recalculate all stats for a season."""
     season = get_season_from_request()
@@ -420,19 +414,37 @@ def recalculate_stats():
 # Error Handlers
 # ============================================================================
 
-@app.errorhandler(404)
+@main_bp.errorhandler(404)
 def not_found(error):
     """Handle 404s - if it's an API route, return JSON error, otherwise serve frontend."""
     # If it's an API route, return JSON error
-    if request.path.startswith('/api/'):
+    if request.path.startswith('/spring2026/api/') or request.path.startswith('/api/'):
         return jsonify({'error': 'Not found'}), 404
     # Otherwise, serve the frontend (for client-side routing)
     return send_from_directory(FRONTEND_DIR, 'index.html')
 
 
-@app.errorhandler(500)
+@main_bp.errorhandler(500)
 def internal_error(error):
     return jsonify({'error': 'Internal server error'}), 500
+
+
+# Register Blueprint with /spring2026 prefix
+app.register_blueprint(main_bp, url_prefix='/spring2026')
+
+
+# ============================================================================
+# Root-level endpoints (for Railway health checks, etc.)
+# ============================================================================
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    """Health check endpoint for Railway (separate from frontend)."""
+    return jsonify({
+        'status': 'ok',
+        'service': 'leaderboard-api',
+        'version': '1.0.0'
+    }), 200
 
 
 # ============================================================================

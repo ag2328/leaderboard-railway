@@ -6,8 +6,8 @@
  */
 
 const API_BASE_URL = window.location.origin.includes('localhost') 
-    ? 'http://localhost:5000/api'
-    : '/api';
+    ? 'http://localhost:5000/spring2026/api'
+    : '/spring2026/api';
 
 /**
  * Fetch team standings for a season
