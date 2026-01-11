@@ -46,7 +46,7 @@ export function renderPlayerStats(players, container) {
     sortedSkaters.forEach(player => {
         const goals = player.goals || 0;
         const assists = player.assists || 0;
-        const penalties = player.penalties || 0;
+        const points = player.points || 0;
 
         html += `
             <tr>
@@ -54,7 +54,7 @@ export function renderPlayerStats(players, container) {
                 <td class="player-name-cell">${player.name}</td>
                 <td>${goals}</td>
                 <td>${assists}</td>
-                <td>${penalties}</td>
+                <td>${points}</td>
             </tr>
         `;
     });
@@ -123,7 +123,7 @@ export function renderPlayerStats(players, container) {
                 <div class="legend-line">
                     <div class="legend-item"><span class="legend-key">G:</span> Goals</div>
                     <div class="legend-item"><span class="legend-key">A:</span> Assists</div>
-                    <div class="legend-item"><span class="legend-key">P:</span> Penalties</div>
+                    <div class="legend-item"><span class="legend-key">P:</span> Points</div>
                 </div>
                 <div class="legend-line">
                     <div class="legend-item"><span class="legend-key">SA:</span> Shots Against</div>

@@ -276,7 +276,7 @@ def get_team_players(team_id, season_id):
         SELECT p.*,
                COALESCE(pss.goals, 0) as goals,
                COALESCE(pss.assists, 0) as assists,
-               COALESCE(pss.penalties, 0) as penalties
+               COALESCE(pss.points, 0) as points
         FROM players p
         LEFT JOIN player_season_stats pss ON p.id = pss.player_id AND pss.season_id = %s
         WHERE p.team_id = %s

@@ -457,6 +457,7 @@ def calculate_player_season_stats(player_id, season_id):
     - Goals
     - Assists
     - Penalties
+    - Points (goals + assists)
     """
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -514,20 +515,24 @@ def calculate_player_season_stats(player_id, season_id):
     """, (game_ids, player_id))
     penalties = cursor.fetchone()[0]
     
+    # Calculate points (goals + assists)
+    points = goals + assists
+    
     # Insert or update player stats
     cursor.execute("""
         INSERT INTO player_season_stats (
             player_id, team_id, season_id,
-            goals, assists, penalties
+            goals, assists, penalties, points
         )
-        VALUES (%s, %s, %s, %s, %s, %s)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
         ON CONFLICT (player_id, season_id)
         DO UPDATE SET
             goals = EXCLUDED.goals,
             assists = EXCLUDED.assists,
             penalties = EXCLUDED.penalties,
+            points = EXCLUDED.points,
             updated_at = NOW()
-    """, (player_id, team_id, season_id, goals, assists, penalties))
+    """, (player_id, team_id, season_id, goals, assists, penalties, points))
     
     conn.commit()
     cursor.close()
@@ -537,7 +542,8 @@ def calculate_player_season_stats(player_id, season_id):
         'player_id': player_id,
         'goals': goals,
         'assists': assists,
-        'penalties': penalties
+        'penalties': penalties,
+        'points': points
     }
 
 

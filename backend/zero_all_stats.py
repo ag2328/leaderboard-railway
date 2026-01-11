@@ -54,6 +54,7 @@ cursor.execute("""
     SET goals = 0,
         assists = 0,
         penalties = 0,
+        points = 0,
         updated_at = NOW()
     WHERE season_id = %s
 """, (season_id,))
@@ -105,4 +106,7 @@ print("=" * 60)
 print("All Stats Set to Zero!")
 print("=" * 60)
 print()
+
+
+
 
