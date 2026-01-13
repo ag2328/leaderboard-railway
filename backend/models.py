@@ -269,7 +269,7 @@ def get_team_standing(team_id, season_id):
 # ============================================================================
 
 def get_team_players(team_id, season_id):
-    """Get all players for a team with their season stats."""
+    """Get all active players for a team with their season stats."""
     conn = get_db_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     cursor.execute("""
@@ -279,7 +279,7 @@ def get_team_players(team_id, season_id):
                COALESCE(pss.points, 0) as points
         FROM players p
         LEFT JOIN player_season_stats pss ON p.id = pss.player_id AND pss.season_id = %s
-        WHERE p.team_id = %s
+        WHERE p.team_id = %s AND p.status = 'active'
         ORDER BY p.jersey_number NULLS LAST, p.name
     """, (season_id, team_id))
     players = cursor.fetchall()
