@@ -59,11 +59,15 @@ def convert_datetime_to_iso(obj):
         return [convert_datetime_to_iso(item) for item in obj]
     return obj
 
-# Add request logging middleware (only log in debug mode to reduce noise)
-@main_bp.before_request
+# Add request logging middleware (log every request)
+@app.before_request
 def log_request_info():
-    if os.getenv('FLASK_DEBUG', 'false').lower() == 'true':
-        print(f"[Request] {request.method} {request.path}", flush=True)
+    forwarded_for = request.headers.get('X-Forwarded-For', '')
+    client_ip = forwarded_for.split(',')[0].strip() if forwarded_for else request.remote_addr
+    print(
+        f"[Request] {request.method} {request.path} ip={client_ip}",
+        flush=True
+    )
 
 # Configuration
 CURRENT_SEASON = os.getenv('CURRENT_SEASON', 'Spring 2026')
