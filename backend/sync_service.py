@@ -232,12 +232,21 @@ def update_aggregated_stats_for_game(game_id, season_id):
         except Exception as e:
             print(f"Error updating player {player_id} stats: {e}")
     
-    # Get goalies for both teams from goalies table
+    # Prefer goalies explicitly assigned for this game
     cursor.execute("""
-        SELECT id FROM goalies
-        WHERE team_id IN (%s, %s) AND status = 'active'
-    """, (home_team_id, away_team_id))
+        SELECT DISTINCT goalie_id
+        FROM game_goalies
+        WHERE game_id = %s AND goalie_id IS NOT NULL
+    """, (game_id,))
     goalie_ids = [row[0] for row in cursor.fetchall()]
+
+    # Fallback: active goalies for the two teams
+    if not goalie_ids:
+        cursor.execute("""
+            SELECT id FROM goalies
+            WHERE team_id IN (%s, %s) AND status = 'active'
+        """, (home_team_id, away_team_id))
+        goalie_ids = [row[0] for row in cursor.fetchall()]
     
     # Update goalie stats
     for goalie_id in goalie_ids:

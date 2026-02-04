@@ -36,3 +36,8 @@ print(f"Updated {updated} players")
 cursor.close()
 conn.close()
 
+
+
+
+
+

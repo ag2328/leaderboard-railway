@@ -23,7 +23,7 @@ from models import (
     get_team_standings, get_team_standing,
     get_team_games, get_game_by_id, get_game_summary,
     get_team_players, get_team_goalie, get_game_goalie_stats,
-    get_game_period_stats
+    get_game_period_stats, get_game_events, get_db_connection
 )
 from sync_service import (
     process_pending_games, process_single_game,
@@ -354,6 +354,101 @@ def get_game_periods_endpoint(game_id):
     if not period_stats:
         return jsonify({'error': 'Game not found or no stats available'}), 404
     return jsonify(period_stats)
+
+
+@main_bp.route('/api/games/<int:game_id>/events-summary', methods=['GET'])
+def get_game_events_summary_endpoint(game_id):
+    """Get goal/assist summary for a game (grouped by team)."""
+    game = get_game_by_id(game_id)
+    if not game:
+        return jsonify({'error': 'Game not found'}), 404
+
+    home_team_id = game['home_team_id']
+    away_team_id = game['away_team_id']
+
+    events = get_game_events(game_id)
+    goal_counts = {}
+    assist_counts = {}
+    assist_player_ids = set()
+
+    for event in events:
+        if event.get('event_type') != 'goal':
+            continue
+
+        player_id = event.get('player_id')
+        player_name = event.get('player_name')
+        player_team_id = event.get('player_team_id')
+
+        if player_id and player_name and player_team_id:
+            goal_counts[player_id] = {
+                'player_id': player_id,
+                'player_name': player_name,
+                'team_id': player_team_id,
+                'count': goal_counts.get(player_id, {}).get('count', 0) + 1
+            }
+
+        details = event.get('details') or {}
+        assists = details.get('assists') if isinstance(details, dict) else None
+        if isinstance(assists, list):
+            for assist_id in assists:
+                if assist_id is None:
+                    continue
+                try:
+                    assist_player_ids.add(int(assist_id))
+                except (TypeError, ValueError):
+                    continue
+
+    if assist_player_ids:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id, name, team_id
+            FROM players
+            WHERE id = ANY(%s)
+        """, (list(assist_player_ids),))
+        for player_id, name, team_id in cursor.fetchall():
+            assist_counts[player_id] = {
+                'player_id': player_id,
+                'player_name': name,
+                'team_id': team_id,
+                'count': 0
+            }
+        cursor.close()
+        conn.close()
+
+    for event in events:
+        if event.get('event_type') != 'goal':
+            continue
+
+        details = event.get('details') or {}
+        assists = details.get('assists') if isinstance(details, dict) else None
+        if isinstance(assists, list):
+            for assist_id in assists:
+                try:
+                    assist_id = int(assist_id)
+                except (TypeError, ValueError):
+                    continue
+                if assist_id in assist_counts:
+                    assist_counts[assist_id]['count'] += 1
+
+    def split_by_team(rows):
+        home = []
+        away = []
+        for row in rows:
+            target = home if row['team_id'] == home_team_id else away
+            target.append(row)
+        return {
+            'home': sorted(home, key=lambda r: (-r['count'], r['player_name'])),
+            'away': sorted(away, key=lambda r: (-r['count'], r['player_name']))
+        }
+
+    return jsonify({
+        'game_id': game_id,
+        'home_team_id': home_team_id,
+        'away_team_id': away_team_id,
+        'goals': split_by_team(goal_counts.values()),
+        'assists': split_by_team(assist_counts.values())
+    })
 
 
 # ============================================================================

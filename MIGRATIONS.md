@@ -96,3 +96,7 @@ SELECT * FROM seasons WHERE name = 'Spring 2026';
 - Make sure your database user has CREATE TABLE permissions
 - Check that you're using the correct DATABASE_URL
 
+
+
+
+

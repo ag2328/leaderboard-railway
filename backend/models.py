@@ -278,8 +278,10 @@ def get_team_players(team_id, season_id):
                COALESCE(pss.assists, 0) as assists,
                COALESCE(pss.points, 0) as points
         FROM players p
+        LEFT JOIN goalies g ON p.id = g.id
         LEFT JOIN player_season_stats pss ON p.id = pss.player_id AND pss.season_id = %s
         WHERE p.team_id = %s AND p.status = 'active'
+          AND g.id IS NULL
         ORDER BY p.jersey_number NULLS LAST, p.name
     """, (season_id, team_id))
     players = cursor.fetchall()
@@ -356,7 +358,7 @@ def count_goals_by_team(game_id, team_id):
     Handles two cases:
     1. Goals with player_id (joins with players table)
     2. Goals without player_id but with team info in details JSONB
-       (for final_score_only entries from scorekeepr_lite)
+       (unknown_scorer/sub entries still count for the team)
     """
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -393,11 +395,9 @@ def count_goals_by_team(game_id, team_id):
                    WHERE p.id = e.player_id AND p.team_id = %s
                ))
               OR
-              -- Goals without player_id but with team in details (scorekeepr_lite case)
-              (e.player_id IS NULL 
-               AND e.details IS NOT NULL
-               AND e.details->>'team' = %s
-               AND e.details->>'final_score_only' = 'true')
+              -- Goals with explicit team in details (subs/unknown scorers)
+              (e.details IS NOT NULL
+               AND e.details->>'team' = %s)
           )
     """, (game_id, team_id, team_string))
     count = cursor.fetchone()[0]

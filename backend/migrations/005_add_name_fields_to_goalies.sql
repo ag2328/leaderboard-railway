@@ -23,3 +23,8 @@ CREATE INDEX IF NOT EXISTS idx_goalies_name
     ON goalies(name)
     WHERE name IS NOT NULL;
 
+
+
+
+
+

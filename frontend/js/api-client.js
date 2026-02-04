@@ -155,6 +155,26 @@ export async function fetchGamePeriodStats(gameId) {
 }
 
 /**
+ * Fetch goal/assist summary for a specific game
+ */
+export async function fetchGameEventSummary(gameId) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/games/${gameId}/events-summary`);
+        if (!response.ok) {
+            if (response.status === 404) {
+                return null;
+            }
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error fetching game event summary:', error);
+        return null;
+    }
+}
+
+/**
  * Health check
  */
 export async function healthCheck() {

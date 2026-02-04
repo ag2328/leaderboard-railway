@@ -4,7 +4,7 @@
  * Handles display of game summary cards and team schedules.
  */
 
-import { fetchTeamGames, fetchGameGoalies, fetchGamePeriodStats } from './api-client.js';
+import { fetchTeamGames, fetchGameGoalies, fetchGameEventSummary } from './api-client.js';
 import { formatDate, formatGameOutcome, getGameOutcomeType, displayError, displayLoading } from './utils.js';
 import { getTeamLogoPath } from './utils.js';
 
@@ -74,109 +74,223 @@ export function renderGameCard(game, teamName) {
  * Handle game card click to flip
  */
 function handleGameCardClick(cardContainer) {
-    const flipper = cardContainer.querySelector('.game-card-flipper');
+    const flipper = cardContainer.querySelector('.game-card-flipper, .schedule-game-flipper');
     const gameId = cardContainer.dataset.gameId;
     
     if (!flipper || !gameId) return;
+
+    const { front } = getFlipperSides(flipper);
+    if (front && !flipper.dataset.frontHeight) {
+        const baseline = front.getBoundingClientRect().height || front.scrollHeight || front.offsetHeight;
+        if (baseline > 0) {
+            flipper.dataset.frontHeight = `${baseline}`;
+        }
+    }
     
     // Toggle flip class
     flipper.classList.toggle('flipped');
+    ensureFlipperResizeObserver(flipper);
+    ensureFlipperTransitionHandler(flipper);
+    requestAnimationFrame(() => syncFlipperHeight(flipper));
+    scheduleFlipHeightReset(flipper);
+
+    if (!flipper.classList.contains('flipped')) {
+        const baseline = parseFloat(flipper.dataset.frontHeight || '0');
+        const frontHeight = front
+            ? front.getBoundingClientRect().height || front.scrollHeight || front.offsetHeight
+            : 0;
+        const target = baseline || frontHeight;
+        if (target) {
+            flipper.style.height = `${target}px`;
+        } else {
+            flipper.style.removeProperty('height');
+        }
+    }
     
     // If flipping to back, load stats
     if (flipper.classList.contains('flipped')) {
-        const backContent = cardContainer.querySelector('.game-card-back-content');
+        const backContent = cardContainer.querySelector('.game-card-back-content, .schedule-game-back-content');
         if (backContent && !backContent.dataset.loaded) {
+            backContent.innerHTML = '<div class="game-card-back-loading">Loading stats...</div>';
             loadGameStats(gameId, backContent);
             backContent.dataset.loaded = 'true';
         }
     }
 }
 
+function getFlipperSides(flipper) {
+    const front = flipper.querySelector('.game-card-front, .schedule-game-front');
+    const back = flipper.querySelector('.game-card-back, .schedule-game-back');
+    const backContent = flipper.querySelector('.game-card-back-content, .schedule-game-back-content');
+    return { front, back, backContent };
+}
+
+function syncFlipperHeight(flipper) {
+    const { front, back, backContent } = getFlipperSides(flipper);
+    if (!front || !back) return;
+
+    const frontHeight = front.getBoundingClientRect().height || front.scrollHeight || front.offsetHeight;
+    const backHeight = backContent
+        ? backContent.getBoundingClientRect().height
+        : back.getBoundingClientRect().height;
+    const isFlipped = flipper.classList.contains('flipped');
+    const storedFrontHeight = parseFloat(flipper.dataset.frontHeight || '0');
+
+    if (!isFlipped && frontHeight > 0) {
+        flipper.dataset.frontHeight = `${frontHeight}`;
+    }
+
+    const baselineFrontHeight = parseFloat(flipper.dataset.frontHeight || `${frontHeight}`);
+    const targetHeight = isFlipped ? backHeight : baselineFrontHeight;
+    const fallbackHeight = Math.max(frontHeight, backHeight, baselineFrontHeight, 1);
+
+    flipper.style.height = `${targetHeight || fallbackHeight}px`;
+}
+
+function ensureFlipperResizeObserver(flipper) {
+    if (flipper._resizeObserver) return;
+    const { front, back, backContent } = getFlipperSides(flipper);
+    if (!front || !back || typeof ResizeObserver === 'undefined') return;
+
+    const observer = new ResizeObserver(() => syncFlipperHeight(flipper));
+    observer.observe(front);
+    observer.observe(backContent || back);
+    flipper._resizeObserver = observer;
+}
+
+function ensureFlipperTransitionHandler(flipper) {
+    if (flipper._transitionHandlerAttached) return;
+    flipper.addEventListener('transitionend', (event) => {
+        if (event.propertyName !== 'transform') return;
+        if (!flipper.classList.contains('flipped')) {
+            const { front } = getFlipperSides(flipper);
+            const baseline = parseFloat(flipper.dataset.frontHeight || '0');
+            const frontHeight = front ? front.getBoundingClientRect().height : 0;
+            const target = baseline || frontHeight;
+            if (target) {
+                flipper.style.height = `${target}px`;
+            }
+        }
+    });
+    flipper._transitionHandlerAttached = true;
+}
+
+function scheduleFlipHeightReset(flipper) {
+    if (flipper.classList.contains('flipped')) return;
+    setTimeout(() => {
+        if (!flipper.classList.contains('flipped')) {
+            syncFlipperHeight(flipper);
+        }
+    }, 650);
+}
+
 /**
  * Load and render game stats on the back of the card
  */
 async function loadGameStats(gameId, container) {
+    const cardContainer = container.closest('.game-card-container, .schedule-game-card');
+    const flipper = cardContainer?.querySelector('.game-card-flipper, .schedule-game-flipper');
     const homeTeam = container.dataset.homeName;
     const awayTeam = container.dataset.awayName;
-    
+
     try {
-        const stats = await fetchGamePeriodStats(gameId);
-        
-        if (!stats) {
+        const [summary, goalies] = await Promise.all([
+            fetchGameEventSummary(gameId),
+            fetchGameGoalies(gameId)
+        ]);
+
+        if (!summary) {
             container.innerHTML = '<div class="game-card-back-error">Stats not available</div>';
+            if (flipper) {
+                requestAnimationFrame(() => syncFlipperHeight(flipper));
+            }
             return;
         }
-        
-        // Render period scores table
-        let scoresHtml = `
-            <div class="game-card-stats-section">
-                <table class="game-card-stats-table">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            ${stats.periods.map(p => `<th>${getPeriodLabel(p)}</th>`).join('')}
-                            <th>T</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="team-cell">
-                                <img src="${getTeamLogoPath(homeTeam)}" alt="${homeTeam}" 
-                                     class="team-logo-small" onerror="this.style.display='none'">
-                                <span class="team-abbrev">${getTeamAbbreviation(homeTeam)}</span>
-                            </td>
-                            ${stats.goals.home.map(goals => `<td>${goals}</td>`).join('')}
-                            <td class="total-cell">${stats.totals.goals.home}</td>
-                        </tr>
-                        <tr>
-                            <td class="team-cell">
-                                <img src="${getTeamLogoPath(awayTeam)}" alt="${awayTeam}" 
-                                     class="team-logo-small" onerror="this.style.display='none'">
-                                <span class="team-abbrev">${getTeamAbbreviation(awayTeam)}</span>
-                            </td>
-                            ${stats.goals.away.map(goals => `<td>${goals}</td>`).join('')}
-                            <td class="total-cell">${stats.totals.goals.away}</td>
-                        </tr>
-                    </tbody>
-                </table>
+
+        const homeGoals = summary.goals.home || [];
+        const awayGoals = summary.goals.away || [];
+        const homeAssists = summary.assists.home || [];
+        const awayAssists = summary.assists.away || [];
+
+        const homeGoalies = goalies.filter(g => g.team_id === summary.home_team_id);
+        const awayGoalies = goalies.filter(g => g.team_id === summary.away_team_id);
+
+        const renderList = (items, emptyLabel) => {
+            if (!items.length) {
+                return `<div class="stat-empty">${emptyLabel}</div>`;
+            }
+            return `<ul>${items.map(item => `<li>${item.player_name} (${item.count})</li>`).join('')}</ul>`;
+        };
+
+        const renderGoalies = (items) => {
+            if (!items.length) {
+                return `<div class="stat-empty">No goalie stats</div>`;
+            }
+            return items.map(goalie => `
+                <div class="goalie-line">
+                    <div class="goalie-name">${goalie.name}</div>
+                    <div class="goalie-meta">
+                        <div>SA ${goalie.shots_against}</div>
+                        <div>GA ${goalie.goals_allowed}</div>
+                        <div>${formatSavePercentage(goalie.save_percentage)}</div>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        container.innerHTML = `
+            <div class="game-back-grid">
+                <div class="game-back-column">
+                    <div class="game-back-team">${awayTeam}</div>
+                    <div class="game-back-section">
+                        <div class="game-back-label">Goals</div>
+                        ${renderList(awayGoals, 'No goals recorded')}
+                    </div>
+                    <div class="game-back-section">
+                        <div class="game-back-label">Assists</div>
+                        ${renderList(awayAssists, 'No assists recorded')}
+                    </div>
+                    <div class="game-back-section">
+                        <div class="game-back-label">Goalie</div>
+                        ${renderGoalies(awayGoalies)}
+                    </div>
+                </div>
+                <div class="game-back-column">
+                    <div class="game-back-team">${homeTeam}</div>
+                    <div class="game-back-section">
+                        <div class="game-back-label">Goals</div>
+                        ${renderList(homeGoals, 'No goals recorded')}
+                    </div>
+                    <div class="game-back-section">
+                        <div class="game-back-label">Assists</div>
+                        ${renderList(homeAssists, 'No assists recorded')}
+                    </div>
+                    <div class="game-back-section">
+                        <div class="game-back-label">Goalie</div>
+                        ${renderGoalies(homeGoalies)}
+                    </div>
+                </div>
             </div>
         `;
-        
-        // Render shots on goal table
-        scoresHtml += `
-            <div class="game-card-stats-section">
-                <h3 class="game-card-stats-title">Shots On Goal</h3>
-                <table class="game-card-stats-table">
-                    <thead>
-                        <tr>
-                            <th>Period</th>
-                            <th>${getTeamAbbreviation(homeTeam)}</th>
-                            <th>${getTeamAbbreviation(awayTeam)}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${stats.periods.map((period, idx) => `
-                            <tr>
-                                <td>${getPeriodLabel(period)}</td>
-                                <td>${stats.shots.home[idx] || 0}</td>
-                                <td>${stats.shots.away[idx] || 0}</td>
-                            </tr>
-                        `).join('')}
-                        <tr class="total-row">
-                            <td>Total</td>
-                            <td class="total-cell">${stats.totals.shots.home}</td>
-                            <td class="total-cell">${stats.totals.shots.away}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        `;
-        
-        container.innerHTML = scoresHtml;
+
+        if (flipper) {
+            requestAnimationFrame(() => syncFlipperHeight(flipper));
+        }
     } catch (error) {
         console.error('Error loading game stats:', error);
         container.innerHTML = '<div class="game-card-back-error">Failed to load stats</div>';
+        if (flipper) {
+            requestAnimationFrame(() => syncFlipperHeight(flipper));
+        }
     }
+}
+
+function formatSavePercentage(value) {
+    const number = Number(value);
+    if (!Number.isFinite(number)) {
+        return '0%';
+    }
+    return `${Math.round(number * 100)}%`;
 }
 
 /**
@@ -205,7 +319,7 @@ function getTeamAbbreviation(teamName) {
  */
 export function initGameCards() {
     document.addEventListener('click', (e) => {
-        const cardContainer = e.target.closest('.game-card-container');
+        const cardContainer = e.target.closest('.game-card-container, .schedule-game-card');
         if (cardContainer) {
             handleGameCardClick(cardContainer);
         }
@@ -332,7 +446,7 @@ export async function renderTeamSchedule(games, teamName, container) {
             }
         }
         
-        html += `
+        const scheduleRow = `
             <div class="schedule-game-row ${isCompleted ? 'completed' : 'upcoming'}">
                 <div class="schedule-game-teams">
                     <div class="schedule-game-team">
@@ -362,6 +476,25 @@ export async function renderTeamSchedule(games, teamName, container) {
                 </div>
             </div>
         `;
+
+        if (isCompleted) {
+            html += `
+                <div class="schedule-game-card" data-game-id="${game.id}">
+                    <div class="schedule-game-flipper">
+                        <div class="schedule-game-front">
+                            ${scheduleRow}
+                        </div>
+                        <div class="schedule-game-back">
+                            <div class="schedule-game-back-content" data-home-name="${homeTeam}" data-away-name="${awayTeam}">
+                                Tap to return
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            html += scheduleRow;
+        }
     });
     
     // Close the last date section
@@ -370,6 +503,7 @@ export async function renderTeamSchedule(games, teamName, container) {
     }
 
     container.innerHTML = html;
+    initScheduleFlipperHeights(container);
 }
 
 /**
@@ -385,5 +519,23 @@ export async function loadTeamGames(teamId, teamName, container, season = 'Sprin
         console.error('Error loading team games:', error);
         displayError(container, 'Failed to load schedule. Please try again later.');
     }
+}
+
+function initScheduleFlipperHeights(container) {
+    if (!container) return;
+    const flippers = container.querySelectorAll('.schedule-game-flipper');
+    if (!flippers.length) return;
+
+    requestAnimationFrame(() => {
+        flippers.forEach((flipper) => {
+            const { front } = getFlipperSides(flipper);
+            if (!front) return;
+            const height = front.getBoundingClientRect().height || front.offsetHeight;
+            if (height > 0) {
+                flipper.dataset.frontHeight = `${height}`;
+                flipper.style.height = `${height}px`;
+            }
+        });
+    });
 }
 

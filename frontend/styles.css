@@ -305,6 +305,141 @@ body {
     margin-bottom: 0;
 }
 
+/* Schedule Game Flip Card (completed games) */
+.schedule-game-card {
+    perspective: 1000px;
+    margin-bottom: var(--spacing-sm);
+    cursor: pointer;
+}
+
+.schedule-game-card:last-child {
+    margin-bottom: 0;
+}
+
+.schedule-game-card .schedule-game-row {
+    margin-bottom: 0;
+}
+
+.schedule-game-flipper {
+    position: relative;
+    display: grid;
+    grid-template-areas: "card";
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+}
+
+.schedule-game-flipper.flipped {
+    transform: rotateY(180deg);
+}
+
+.schedule-game-front,
+.schedule-game-back {
+    grid-area: card;
+    width: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.schedule-game-back {
+    position: absolute;
+    inset: 0;
+}
+
+.schedule-game-back {
+    transform: rotateY(180deg);
+}
+
+.schedule-game-back-content {
+    min-height: 120px;
+    padding: var(--spacing-md);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface-1);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.game-back-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--spacing-md);
+}
+
+.game-back-column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    text-align: left;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+}
+
+.game-back-team {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.game-back-section {
+    padding: var(--spacing-sm) 0;
+}
+
+.game-back-section .goalie-line {
+    margin-top: var(--spacing-xs);
+}
+
+.game-back-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-xs);
+    font-weight: 700;
+}
+
+.game-back-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+}
+
+.stat-empty {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.goalie-line {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+    font-size: 0.85rem;
+    color: var(--text-primary);
+}
+
+.goalie-name {
+    line-height: 1.1;
+}
+
+.goalie-meta {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-align: right;
+    white-space: nowrap;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    line-height: 1.1;
+}
+
 .schedule-game-teams {
     display: flex;
     align-items: center;

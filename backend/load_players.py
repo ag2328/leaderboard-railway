@@ -226,8 +226,41 @@ def load_players():
                 created += 1
                 print(f"[CREATE] {display_name} (ID: {player_id}) -> team_id={team_id}, jersey={jersey_number}, customer_id={customer_id or 'NULL'}")
             
-            # Handle goalies - create/update goalie_season_stats entry
-            if is_goalie and player_id:
+            # Handle goalies - ensure goalies table + stats entry
+            if is_goalie:
+                # Upsert goalie record (goalie_id references goalies table)
+                goalie_id = None
+                if full_name:
+                    cursor.execute("SELECT id FROM goalies WHERE full_name = %s", (full_name,))
+                else:
+                    cursor.execute("SELECT id FROM goalies WHERE name = %s", (display_name,))
+                existing_goalie = cursor.fetchone()
+
+                if existing_goalie:
+                    goalie_id = existing_goalie['id']
+                    cursor.execute("""
+                        UPDATE goalies
+                        SET team_id = %s,
+                            first_name = %s,
+                            last_name = %s,
+                            name = %s,
+                            full_name = %s,
+                            jersey_number = %s,
+                            status = 'active',
+                            updated_at = NOW()
+                        WHERE id = %s
+                    """, (team_id, first_name, last_name, display_name, full_name, jersey_number, goalie_id))
+                else:
+                    cursor.execute("""
+                        INSERT INTO goalies (
+                            team_id, first_name, last_name, name, full_name,
+                            jersey_number, status, created_at, updated_at
+                        )
+                        VALUES (%s, %s, %s, %s, %s, %s, 'active', NOW(), NOW())
+                        RETURNING id
+                    """, (team_id, first_name, last_name, display_name, full_name, jersey_number))
+                    goalie_id = cursor.fetchone()['id']
+
                 cursor.execute("""
                     INSERT INTO goalie_season_stats (
                         goalie_id, team_id, season_id,
@@ -239,7 +272,7 @@ def load_players():
                     DO UPDATE SET
                         team_id = EXCLUDED.team_id,
                         updated_at = NOW()
-                """, (player_id, team_id, season_id))
+                """, (goalie_id, team_id, season_id))
                 goalies_processed += 1
 
         conn.commit()
