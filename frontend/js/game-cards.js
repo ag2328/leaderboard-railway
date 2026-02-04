@@ -324,6 +324,25 @@ export function initGameCards() {
             handleGameCardClick(cardContainer);
         }
     });
+
+    initGameFlipperHeights();
+}
+
+function initGameFlipperHeights() {
+    const flippers = document.querySelectorAll('.game-card-flipper');
+    if (!flippers.length) return;
+
+    requestAnimationFrame(() => {
+        flippers.forEach((flipper) => {
+            const { front } = getFlipperSides(flipper);
+            if (!front) return;
+            const height = front.getBoundingClientRect().height || front.offsetHeight;
+            if (height > 0) {
+                flipper.dataset.frontHeight = `${height}`;
+                flipper.style.height = `${height}px`;
+            }
+        });
+    });
 }
 
 /**
