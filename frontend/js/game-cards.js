@@ -88,11 +88,27 @@ function handleGameCardClick(cardContainer) {
     }
     
     // Toggle flip class
+    const wasFlipped = flipper.classList.contains('flipped');
     flipper.classList.toggle('flipped');
     ensureFlipperResizeObserver(flipper);
     ensureFlipperTransitionHandler(flipper);
-    requestAnimationFrame(() => syncFlipperHeight(flipper));
-    scheduleFlipHeightReset(flipper);
+
+    if (wasFlipped) {
+        const baseline = parseFloat(flipper.dataset.frontHeight || '0');
+        const frontHeight = front
+            ? front.getBoundingClientRect().height || front.scrollHeight || front.offsetHeight
+            : 0;
+        const target = baseline || frontHeight;
+        if (target) {
+            flipper.style.height = `${target}px`;
+            flipper.dataset.lockedHeight = 'true';
+        } else {
+            flipper.style.removeProperty('height');
+        }
+    } else {
+        requestAnimationFrame(() => syncFlipperHeight(flipper));
+        scheduleFlipHeightReset(flipper);
+    }
 
     if (!flipper.classList.contains('flipped')) {
         const baseline = parseFloat(flipper.dataset.frontHeight || '0');
@@ -136,6 +152,11 @@ function syncFlipperHeight(flipper) {
     const isFlipped = flipper.classList.contains('flipped');
     const storedFrontHeight = parseFloat(flipper.dataset.frontHeight || '0');
 
+    if (!isFlipped && flipper.dataset.lockedHeight === 'true' && storedFrontHeight) {
+        flipper.style.height = `${storedFrontHeight}px`;
+        return;
+    }
+
     if (!isFlipped && frontHeight > 0) {
         flipper.dataset.frontHeight = `${frontHeight}`;
     }
@@ -170,6 +191,7 @@ function ensureFlipperTransitionHandler(flipper) {
             if (target) {
                 flipper.style.height = `${target}px`;
             }
+            delete flipper.dataset.lockedHeight;
         }
     });
     flipper._transitionHandlerAttached = true;
