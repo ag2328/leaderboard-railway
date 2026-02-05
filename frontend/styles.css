@@ -630,8 +630,28 @@ body {
     -webkit-backface-visibility: hidden;
 }
 
+.game-card-front,
+.schedule-game-front {
+    position: absolute;
+    width: 100%;
+    transform: rotateY(0deg);
+}
+
 .game-card-back {
     transform: rotateY(180deg);
+}
+
+.game-card-container.completed .game-card-flipper:not(.flipped) .game-card-front {
+    background: rgba(126, 192, 238, 0.12);
+    border-color: rgba(126, 192, 238, 0.45);
+    box-shadow: 0 0 18px rgba(126, 192, 238, 0.25);
+}
+
+.schedule-game-card.completed .schedule-game-flipper:not(.flipped) .schedule-game-front,
+.schedule-game-card.completed .schedule-game-flipper:not(.flipped) .schedule-game-row {
+    background: rgba(126, 192, 238, 0.12);
+    border-color: rgba(126, 192, 238, 0.45);
+    box-shadow: 0 0 16px rgba(126, 192, 238, 0.22);
 }
 
 .game-card {

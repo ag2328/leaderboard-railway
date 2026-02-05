@@ -82,37 +82,9 @@ def calculate_game_summary(game_id, force_update=False):
     if game['status'] != 'locked':
         return None
     
-    # Get scores
-    home_score = count_goals_by_team(game_id, game['home_team_id'])
-    away_score = count_goals_by_team(game_id, game['away_team_id'])
-    
-    # Get events to determine max period and shots
-    events = get_game_events(game_id)
-    max_period = max([e['period'] for e in events], default=3)
-    # Use game record's overtime/shootout flags if set, otherwise calculate from events
-    went_to_overtime = game.get('went_to_overtime', False) or (max_period > 3)
-    went_to_shootout = game.get('went_to_shootout', False)
-    
-    # Determine outcome
-    if home_score > away_score:
-        if went_to_shootout:
-            outcome = 'so_win'
-        elif went_to_overtime:
-            outcome = 'ot_win'
-        else:
-            outcome = 'regulation_win'
-        winner_id = game['home_team_id']
-    elif away_score > home_score:
-        if went_to_shootout:
-            outcome = 'so_loss'
-        elif went_to_overtime:
-            outcome = 'ot_loss'
-        else:
-            outcome = 'regulation_loss'
-        winner_id = game['away_team_id']
-    else:
-        outcome = 'tie'
-        winner_id = None
+    # Get scores from events (default), but prefer any existing final scores
+    calculated_home_score = count_goals_by_team(game_id, game['home_team_id'])
+    calculated_away_score = count_goals_by_team(game_id, game['away_team_id'])
     
     # Get season_id
     season_id = game.get('season_id')
@@ -123,7 +95,7 @@ def calculate_game_summary(game_id, force_update=False):
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    # Check if game_summary already exists (e.g., from scorekeepr_lite's enter_goalie_stats)
+    # Check if game_summary already exists (e.g., manual results or previous processing)
     # Also get the existing scores to compare if shots were explicitly set
     cursor.execute("""
         SELECT home_team_shots, away_team_shots, home_team_score, away_team_score,
@@ -147,6 +119,44 @@ def calculate_game_summary(game_id, force_update=False):
             'outcome': existing_outcome,
             'winner_id': existing_winner_id
         }
+
+    # Prefer existing final scores when present (locked games may have manual corrections)
+    existing_home_score = existing_summary[2] if existing_summary is not None else None
+    existing_away_score = existing_summary[3] if existing_summary is not None else None
+    if existing_home_score is not None and existing_away_score is not None:
+        home_score = existing_home_score
+        away_score = existing_away_score
+    else:
+        home_score = calculated_home_score
+        away_score = calculated_away_score
+    
+    # Get events to determine max period and shots
+    events = get_game_events(game_id)
+    max_period = max([e['period'] for e in events], default=3)
+    # Use game record's overtime/shootout flags if set, otherwise calculate from events
+    went_to_overtime = game.get('went_to_overtime', False) or (max_period > 3)
+    went_to_shootout = game.get('went_to_shootout', False)
+    
+    # Determine outcome using authoritative final scores
+    if home_score > away_score:
+        if went_to_shootout:
+            outcome = 'so_win'
+        elif went_to_overtime:
+            outcome = 'ot_win'
+        else:
+            outcome = 'regulation_win'
+        winner_id = game['home_team_id']
+    elif away_score > home_score:
+        if went_to_shootout:
+            outcome = 'so_loss'
+        elif went_to_overtime:
+            outcome = 'ot_loss'
+        else:
+            outcome = 'regulation_loss'
+        winner_id = game['away_team_id']
+    else:
+        outcome = 'tie'
+        winner_id = None
     
     # If shots already exist and are different from scores (meaning they were explicitly set),
     # preserve them; otherwise use goals as default

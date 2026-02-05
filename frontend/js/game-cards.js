@@ -39,7 +39,7 @@ export function renderGameCard(game, teamName) {
     const awayTeamId = game.away_team_id;
 
     return `
-        <div class="game-card-container" data-game-id="${game.id}">
+        <div class="game-card-container completed" data-game-id="${game.id}">
             <div class="game-card-flipper">
                 <div class="game-card-front">
                     <div class="game-card-date">${formatDate(game.game_date)}</div>
@@ -520,7 +520,7 @@ export async function renderTeamSchedule(games, teamName, container) {
 
         if (isCompleted) {
             html += `
-                <div class="schedule-game-card" data-game-id="${game.id}">
+                <div class="schedule-game-card completed" data-game-id="${game.id}">
                     <div class="schedule-game-flipper">
                         <div class="schedule-game-front">
                             ${scheduleRow}
