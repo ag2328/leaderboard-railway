@@ -232,6 +232,25 @@ body {
     color: var(--accent);
 }
 
+.champion-row .champion-team-name {
+    position: relative;
+}
+
+.champion-row .champion-team-name a {
+    position: relative;
+    display: inline-block;
+    width: auto;
+    color: #ffd86b;
+    text-shadow: 0 0 8px rgba(255, 216, 107, 0.7), 0 0 18px rgba(255, 199, 56, 0.45);
+    background: transparent;
+    box-shadow: none;
+    animation: none;
+}
+
+.champion-row .champion-logo {
+    box-shadow: 0 0 0 2px rgba(255, 216, 102, 0.5), 0 0 14px rgba(255, 215, 0, 0.45);
+}
+
 .team-gp,
 .team-w,
 .team-l,
@@ -1029,6 +1048,33 @@ body {
     font-size: 0.9rem;
     margin-top: var(--spacing-md);
     font-weight: 400;
+}
+
+.standings-update-message.season-final-message {
+    font-size: 1.5rem;
+    line-height: 1.3;
+    font-weight: 500;
+}
+
+.season-link-placeholder {
+    display: block;
+    margin-top: calc(var(--spacing-lg) + var(--spacing-sm));
+    color: var(--text-muted);
+    font-size: 0.75em;
+}
+
+.season-link-live {
+    display: block;
+    margin-top: calc(var(--spacing-lg) + var(--spacing-sm));
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.75em;
+}
+
+.season-link-live:hover {
+    color: var(--accent-hover);
+    text-decoration: underline;
 }
 
 /* Scrollbar styling */
