@@ -15,6 +15,7 @@ import psycopg2
 from datetime import datetime
 from models import (
     get_game_by_id, get_game_events, count_goals_by_team,
+    get_final_scores_from_game_metadata,
     get_team_games, get_all_teams
 )
 from dotenv import load_dotenv
@@ -82,21 +83,22 @@ def calculate_game_summary(game_id, force_update=False):
     if game['status'] != 'locked':
         return None
     
-    # Get scores from events (default), but prefer any existing final scores
+    # Authoritative final score: scorekeepr_lite entry (game_metadata) when present.
+    # Only use counted goals or existing summary when no game_metadata exists.
+    metadata_scores = get_final_scores_from_game_metadata(game_id)
     calculated_home_score = count_goals_by_team(game_id, game['home_team_id'])
     calculated_away_score = count_goals_by_team(game_id, game['away_team_id'])
-    
+
     # Get season_id
     season_id = game.get('season_id')
     if not season_id:
         return None
-    
+
     # Insert or update game_summary
     conn = get_db_connection()
     cursor = conn.cursor()
-    
-    # Check if game_summary already exists (e.g., manual results or previous processing)
-    # Also get the existing scores to compare if shots were explicitly set
+
+    # Check if game_summary already exists (for shots / early return when not force_update)
     cursor.execute("""
         SELECT home_team_shots, away_team_shots, home_team_score, away_team_score,
                game_outcome, winner_team_id, went_to_overtime, went_to_shootout
@@ -120,10 +122,13 @@ def calculate_game_summary(game_id, force_update=False):
             'winner_id': existing_winner_id
         }
 
-    # Prefer existing final scores when present (locked games may have manual corrections)
+    # Resolve home_score / away_score: game_metadata first, then existing summary, then counted goals
     existing_home_score = existing_summary[2] if existing_summary is not None else None
     existing_away_score = existing_summary[3] if existing_summary is not None else None
-    if existing_home_score is not None and existing_away_score is not None:
+    if metadata_scores is not None:
+        home_score = metadata_scores["home_score"]
+        away_score = metadata_scores["away_score"]
+    elif existing_home_score is not None and existing_away_score is not None and not force_update:
         home_score = existing_home_score
         away_score = existing_away_score
     else:

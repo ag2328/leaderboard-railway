@@ -565,9 +565,7 @@ export async function loadTeamGames(teamId, teamName, container, season = 'Sprin
 function initScheduleFlipperHeights(container) {
     if (!container) return;
     const flippers = container.querySelectorAll('.schedule-game-flipper');
-    if (!flippers.length) return;
-
-    requestAnimationFrame(() => {
+    if (!flippers.length) return;    requestAnimationFrame(() => {
         flippers.forEach((flipper) => {
             const { front } = getFlipperSides(flipper);
             if (!front) return;
@@ -579,4 +577,3 @@ function initScheduleFlipperHeights(container) {
         });
     });
 }
-

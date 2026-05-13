@@ -8,8 +8,9 @@ import { fetchStandings } from './api-client.js';
 import { teamNameToSlug, getTeamLogoPath, displayError, displayLoading } from './utils.js';
 
 const REGULAR_SEASON_GAMES = 14;
-const NEXT_SEASON_LINK_TEXT = '2026 Season Leaderboard';
-const NEXT_SEASON_URL = '';
+const NEXT_SEASON_LINK_TEXT = 'Click Here for Summer 2026 Stats';
+const SUMMER_CUBE_NOTICE = 'The Summer 2026 Stats Will Be Tracked by The Cube';
+const NEXT_SEASON_URL = 'https://www.thecubesantaclarita.com/standings/show/9423003?subseason=960235';
 
 function isSeasonComplete(standings = []) {
     if (!standings.length) {
@@ -31,7 +32,8 @@ function updateStandingsFooter(isSeasonFinal) {
             : `<span class="season-link-placeholder">${NEXT_SEASON_LINK_TEXT} (Coming Soon)</span>`;
 
         footer.innerHTML = `
-            Thank you for a great season! Congratulations to the Canadiens for their 1st place finish.
+            <div class="season-final-thanks">Thank you for a great season! Congratulations to the Canadiens for their 1st place finish.</div>
+            <div class="season-cube-notice">${SUMMER_CUBE_NOTICE}</div>
             ${nextSeasonMarkup}
         `;
         return;

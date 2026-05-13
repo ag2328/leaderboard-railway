@@ -332,6 +332,43 @@ def get_team_goalie(team_id, season_id):
 # Events (for calculating stats)
 # ============================================================================
 
+def get_final_scores_from_game_metadata(game_id):
+    """
+    Get authoritative final score from scorekeepr_lite entry (game_metadata event).
+    Returns {'home_score': int, 'away_score': int} or None if no game_metadata.
+    Uses the latest game_metadata event if multiple exist.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor.execute("""
+        SELECT details
+        FROM events
+        WHERE game_id = %s AND event_type = 'game_metadata'
+        ORDER BY id DESC
+        LIMIT 1
+    """, (game_id,))
+    row = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    if not row or not row.get("details"):
+        return None
+    d = row["details"]
+    if isinstance(d, str):
+        import json
+        d = json.loads(d)
+    home = d.get("home_score")
+    away = d.get("away_score")
+    if home is None and away is None:
+        return None
+    try:
+        return {
+            "home_score": int(home) if home is not None else 0,
+            "away_score": int(away) if away is not None else 0,
+        }
+    except (TypeError, ValueError):
+        return None
+
+
 def get_game_events(game_id):
     """Get all events for a game."""
     conn = get_db_connection()

@@ -106,18 +106,21 @@ def process_pending_games(season_id=None):
     }
 
 
-def process_single_game(game_id):
+def process_single_game(game_id, force_recalc_from_events=False):
     """
     Process a single game by ID.
-    
-    Used when scorekeepr_lite locks a game and wants immediate processing.
-    
+
+    When force_recalc_from_events=True (e.g. from reprocess_game.py after you
+    edited events in the DB), game summary and goalie stats are recalculated
+    from current goal events. Use this after deleting/adding goals or fixing
+    goalie data manually.
+
     Returns:
         dict: Result with success status and message
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     try:
         # Get game info
         cursor.execute("""
@@ -126,19 +129,19 @@ def process_single_game(game_id):
             WHERE id = %s
         """, (game_id,))
         game = cursor.fetchone()
-        
+
         if not game:
             return {'error': f'Game {game_id} not found'}
-        
+
         if game[1] != 'locked':  # status
             return {'error': f'Game {game_id} is not locked (status: {game[1]})'}
-        
+
         season_id = game[2]
         if not season_id:
             return {'error': f'Game {game_id} has no season_id'}
-        
-        # Calculate game summary
-        summary = calculate_game_summary(game_id)
+
+        # Calculate game summary (from events when force_recalc_from_events)
+        summary = calculate_game_summary(game_id, force_update=force_recalc_from_events)
         if not summary:
             return {'error': f'Failed to calculate summary for game {game_id}'}
         

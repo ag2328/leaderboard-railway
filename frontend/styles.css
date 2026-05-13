@@ -1056,11 +1056,22 @@ body {
     font-weight: 500;
 }
 
+.season-final-thanks {
+    display: block;
+}
+
+.season-cube-notice {
+    display: block;
+    margin-top: var(--spacing-md);
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
 .season-link-placeholder {
     display: block;
     margin-top: calc(var(--spacing-lg) + var(--spacing-sm));
     color: var(--text-muted);
-    font-size: 0.75em;
+    font-size: calc(0.75em * 1.15);
 }
 
 .season-link-live {
@@ -1069,7 +1080,7 @@ body {
     color: var(--accent);
     text-decoration: none;
     font-weight: 500;
-    font-size: 0.75em;
+    font-size: calc(0.75em * 1.15);
 }
 
 .season-link-live:hover {
