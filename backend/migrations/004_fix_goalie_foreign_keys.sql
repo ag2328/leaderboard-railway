@@ -30,3 +30,8 @@ ALTER TABLE goalie_season_stats
 CREATE INDEX IF NOT EXISTS idx_goalie_game_stats_goalie_id ON goalie_game_stats(goalie_id);
 CREATE INDEX IF NOT EXISTS idx_goalie_season_stats_goalie_id ON goalie_season_stats(goalie_id);
 
+
+
+
+
+

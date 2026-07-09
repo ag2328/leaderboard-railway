@@ -274,7 +274,7 @@ def create_test_game(game_config, game_name='Test Game'):
     
     # Create game summary
     print("Creating game summary...")
-    summary = calculate_game_summary(game_id)
+    summary = calculate_game_summary(game_id, force_update=True)
     if summary:
         # Update with correct shots (calculate_game_summary uses simplified shots = goals)
         cursor.execute("""

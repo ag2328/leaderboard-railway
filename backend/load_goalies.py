@@ -77,19 +77,70 @@ def load_goalies():
 
         created_stats = 0
         updated_stats = 0
+        created_goalies = 0
+        updated_goalies = 0
         created_players = 0
         errors = []
 
         for goalie in goalies_list:
             customer_id = goalie.get('customer_id')
             team_name = goalie.get('team_name')
-            full_name = goalie.get('full_name', '').strip()
+            first_name = goalie.get('first_name', '').strip()
+            last_name = goalie.get('last_name', '').strip()
+            provided_full = goalie.get('full_name', '').strip()
+            jersey_number = goalie.get('jersey_number', '')
+
+            # Build display and full names
+            if first_name and last_name:
+                display_name = f"{first_name} {last_name[0].upper()}."
+                full_name = provided_full or f"{first_name} {last_name}"
+            else:
+                display_name = provided_full or f"{first_name} {last_name}".strip()
+                full_name = provided_full or display_name
+
+            # Normalize jersey number
+            jersey_number = int(jersey_number) if str(jersey_number).strip().isdigit() else None
 
             # Get team ID
             team_id = team_map.get(team_name)
             if not team_id:
                 errors.append(f"Team not found in DB: {team_name} for goalie {full_name}")
                 continue
+
+            # Upsert goalie record in goalies table
+            goalie_id = None
+            if full_name:
+                cursor.execute("SELECT id, team_id FROM goalies WHERE full_name = %s", (full_name,))
+            else:
+                cursor.execute("SELECT id, team_id FROM goalies WHERE name = %s", (display_name,))
+            existing_goalie = cursor.fetchone()
+
+            if existing_goalie:
+                goalie_id = existing_goalie['id']
+                cursor.execute("""
+                    UPDATE goalies
+                    SET team_id = %s,
+                        first_name = %s,
+                        last_name = %s,
+                        name = %s,
+                        full_name = %s,
+                        jersey_number = %s,
+                        status = 'active',
+                        updated_at = NOW()
+                    WHERE id = %s
+                """, (team_id, first_name, last_name, display_name, full_name, jersey_number, goalie_id))
+                updated_goalies += 1
+            else:
+                cursor.execute("""
+                    INSERT INTO goalies (
+                        team_id, first_name, last_name, name, full_name,
+                        jersey_number, status, created_at, updated_at
+                    )
+                    VALUES (%s, %s, %s, %s, %s, %s, 'active', NOW(), NOW())
+                    RETURNING id
+                """, (team_id, first_name, last_name, display_name, full_name, jersey_number))
+                goalie_id = cursor.fetchone()['id']
+                created_goalies += 1
 
             # Find player by customer_id
             player_id = None
@@ -140,11 +191,11 @@ def load_goalies():
             else:
                 created_player = False
 
-            # Create or update goalie_season_stats entry
+            # Create or update goalie_season_stats entry (goalie_id references goalies table)
             cursor.execute("""
                 SELECT id FROM goalie_season_stats 
                 WHERE goalie_id = %s AND season_id = %s
-            """, (player_id, season_id))
+            """, (goalie_id, season_id))
             
             existing = cursor.fetchone()
 
@@ -155,7 +206,7 @@ def load_goalies():
                     SET team_id = %s,
                         updated_at = NOW()
                     WHERE goalie_id = %s AND season_id = %s
-                """, (team_id, player_id, season_id))
+                """, (team_id, goalie_id, season_id))
                 updated_stats += 1
                 print(f"[UPDATE STATS] {full_name} ({team_name}) - Goalie stats updated")
             else:
@@ -168,7 +219,7 @@ def load_goalies():
                     )
                     VALUES (%s, %s, %s, 0, 0, 0, 0.0, NOW(), NOW())
                     RETURNING id
-                """, (player_id, team_id, season_id))
+                """, (goalie_id, team_id, season_id))
                 new_id = cursor.fetchone()['id']
                 created_stats += 1
                 print(f"[CREATE STATS] {full_name} ({team_name}, #{goalie.get('jersey_number', 'N/A')}) - Goalie stats created (ID: {new_id})")
@@ -182,6 +233,8 @@ def load_goalies():
         print("=" * 60)
         print("Goalies Load Summary")
         print("=" * 60)
+        print(f"Goalies created: {created_goalies}")
+        print(f"Goalies updated: {updated_goalies}")
         print(f"Players created: {created_players}")
         print(f"Goalie stats created: {created_stats}")
         print(f"Goalie stats updated: {updated_stats}")

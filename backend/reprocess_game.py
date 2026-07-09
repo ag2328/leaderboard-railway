@@ -32,7 +32,8 @@ def main():
     print("=" * 60)
     print()
     
-    result = process_single_game(game_id)
+    # Recalc from events so manual DB edits (e.g. deleted goal) are reflected
+    result = process_single_game(game_id, force_recalc_from_events=True)
     
     print()
     print("=" * 60)
@@ -53,4 +54,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+
 

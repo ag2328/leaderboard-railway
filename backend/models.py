@@ -278,8 +278,10 @@ def get_team_players(team_id, season_id):
                COALESCE(pss.assists, 0) as assists,
                COALESCE(pss.points, 0) as points
         FROM players p
+        LEFT JOIN goalies g ON p.id = g.id
         LEFT JOIN player_season_stats pss ON p.id = pss.player_id AND pss.season_id = %s
         WHERE p.team_id = %s AND p.status = 'active'
+          AND g.id IS NULL
         ORDER BY p.jersey_number NULLS LAST, p.name
     """, (season_id, team_id))
     players = cursor.fetchall()
@@ -330,6 +332,43 @@ def get_team_goalie(team_id, season_id):
 # Events (for calculating stats)
 # ============================================================================
 
+def get_final_scores_from_game_metadata(game_id):
+    """
+    Get authoritative final score from scorekeepr_lite entry (game_metadata event).
+    Returns {'home_score': int, 'away_score': int} or None if no game_metadata.
+    Uses the latest game_metadata event if multiple exist.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor.execute("""
+        SELECT details
+        FROM events
+        WHERE game_id = %s AND event_type = 'game_metadata'
+        ORDER BY id DESC
+        LIMIT 1
+    """, (game_id,))
+    row = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    if not row or not row.get("details"):
+        return None
+    d = row["details"]
+    if isinstance(d, str):
+        import json
+        d = json.loads(d)
+    home = d.get("home_score")
+    away = d.get("away_score")
+    if home is None and away is None:
+        return None
+    try:
+        return {
+            "home_score": int(home) if home is not None else 0,
+            "away_score": int(away) if away is not None else 0,
+        }
+    except (TypeError, ValueError):
+        return None
+
+
 def get_game_events(game_id):
     """Get all events for a game."""
     conn = get_db_connection()
@@ -356,7 +395,7 @@ def count_goals_by_team(game_id, team_id):
     Handles two cases:
     1. Goals with player_id (joins with players table)
     2. Goals without player_id but with team info in details JSONB
-       (for final_score_only entries from scorekeepr_lite)
+       (unknown_scorer/sub entries still count for the team)
     """
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -393,11 +432,9 @@ def count_goals_by_team(game_id, team_id):
                    WHERE p.id = e.player_id AND p.team_id = %s
                ))
               OR
-              -- Goals without player_id but with team in details (scorekeepr_lite case)
-              (e.player_id IS NULL 
-               AND e.details IS NOT NULL
-               AND e.details->>'team' = %s
-               AND e.details->>'final_score_only' = 'true')
+              -- Goals with explicit team in details (subs/unknown scorers)
+              (e.details IS NOT NULL
+               AND e.details->>'team' = %s)
           )
     """, (game_id, team_id, team_string))
     count = cursor.fetchone()[0]

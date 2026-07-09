@@ -15,6 +15,7 @@ import psycopg2
 from datetime import datetime
 from models import (
     get_game_by_id, get_game_events, count_goals_by_team,
+    get_final_scores_from_game_metadata,
     get_team_games, get_all_teams
 )
 from dotenv import load_dotenv
@@ -50,14 +51,14 @@ def calculate_points(game_outcome, team_id, winner_team_id):
     """
     if game_outcome == 'regulation_win':
         return 2 if team_id == winner_team_id else 0
-    elif game_outcome == 'regulation_loss':
-        return 0 if team_id == winner_team_id else 2
-    elif game_outcome == 'tie':
+    if game_outcome == 'regulation_loss':
+        return 2 if team_id == winner_team_id else 0
+    if game_outcome == 'tie':
         return 1
-    elif game_outcome in ['ot_win', 'so_win']:
-        return 2 if team_id == winner_team_id else 1  # Winner: 1 (tie) + 1 (win) = 2, Loser: 1 (tie)
-    elif game_outcome in ['ot_loss', 'so_loss']:
-        return 1 if team_id == winner_team_id else 2  # Loser: 1 (tie), Winner: 2 (tie + win)
+    if game_outcome in ['ot_win', 'so_win']:
+        return 2 if team_id == winner_team_id else 1  # Winner: 2, Loser: 1
+    if game_outcome in ['ot_loss', 'so_loss']:
+        return 2 if team_id == winner_team_id else 1  # Winner: 2, Loser: 1
     return 0
 
 
@@ -65,7 +66,7 @@ def calculate_points(game_outcome, team_id, winner_team_id):
 # Game Summary Calculation
 # ============================================================================
 
-def calculate_game_summary(game_id):
+def calculate_game_summary(game_id, force_update=False):
     """
     Calculate and store game summary for a locked game.
     
@@ -82,9 +83,57 @@ def calculate_game_summary(game_id):
     if game['status'] != 'locked':
         return None
     
-    # Get scores
-    home_score = count_goals_by_team(game_id, game['home_team_id'])
-    away_score = count_goals_by_team(game_id, game['away_team_id'])
+    # Authoritative final score: scorekeepr_lite entry (game_metadata) when present.
+    # Only use counted goals or existing summary when no game_metadata exists.
+    metadata_scores = get_final_scores_from_game_metadata(game_id)
+    calculated_home_score = count_goals_by_team(game_id, game['home_team_id'])
+    calculated_away_score = count_goals_by_team(game_id, game['away_team_id'])
+
+    # Get season_id
+    season_id = game.get('season_id')
+    if not season_id:
+        return None
+
+    # Insert or update game_summary
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Check if game_summary already exists (for shots / early return when not force_update)
+    cursor.execute("""
+        SELECT home_team_shots, away_team_shots, home_team_score, away_team_score,
+               game_outcome, winner_team_id, went_to_overtime, went_to_shootout
+        FROM game_summaries
+        WHERE game_id = %s
+    """, (game_id,))
+    existing_summary = cursor.fetchone()
+
+    if existing_summary is not None and not force_update:
+        existing_home_score = existing_summary[2]
+        existing_away_score = existing_summary[3]
+        existing_outcome = existing_summary[4]
+        existing_winner_id = existing_summary[5]
+        cursor.close()
+        conn.close()
+        return {
+            'game_id': game_id,
+            'home_score': existing_home_score,
+            'away_score': existing_away_score,
+            'outcome': existing_outcome,
+            'winner_id': existing_winner_id
+        }
+
+    # Resolve home_score / away_score: game_metadata first, then existing summary, then counted goals
+    existing_home_score = existing_summary[2] if existing_summary is not None else None
+    existing_away_score = existing_summary[3] if existing_summary is not None else None
+    if metadata_scores is not None:
+        home_score = metadata_scores["home_score"]
+        away_score = metadata_scores["away_score"]
+    elif existing_home_score is not None and existing_away_score is not None and not force_update:
+        home_score = existing_home_score
+        away_score = existing_away_score
+    else:
+        home_score = calculated_home_score
+        away_score = calculated_away_score
     
     # Get events to determine max period and shots
     events = get_game_events(game_id)
@@ -93,7 +142,7 @@ def calculate_game_summary(game_id):
     went_to_overtime = game.get('went_to_overtime', False) or (max_period > 3)
     went_to_shootout = game.get('went_to_shootout', False)
     
-    # Determine outcome
+    # Determine outcome using authoritative final scores
     if home_score > away_score:
         if went_to_shootout:
             outcome = 'so_win'
@@ -113,24 +162,6 @@ def calculate_game_summary(game_id):
     else:
         outcome = 'tie'
         winner_id = None
-    
-    # Get season_id
-    season_id = game.get('season_id')
-    if not season_id:
-        return None
-    
-    # Insert or update game_summary
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    
-    # Check if game_summary already exists (e.g., from scorekeepr_lite's enter_goalie_stats)
-    # Also get the existing scores to compare if shots were explicitly set
-    cursor.execute("""
-        SELECT home_team_shots, away_team_shots, home_team_score, away_team_score
-        FROM game_summaries
-        WHERE game_id = %s
-    """, (game_id,))
-    existing_summary = cursor.fetchone()
     
     # If shots already exist and are different from scores (meaning they were explicitly set),
     # preserve them; otherwise use goals as default
@@ -462,7 +493,7 @@ def calculate_player_season_stats(player_id, season_id):
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    # Get player's team
+    # Get player's current team (used for display, not filtering stats)
     cursor.execute("SELECT team_id FROM players WHERE id = %s", (player_id,))
     player = cursor.fetchone()
     if not player:
@@ -472,47 +503,42 @@ def calculate_player_season_stats(player_id, season_id):
     
     team_id = player[0]
     
-    # Get all games for this team in this season
-    cursor.execute("""
-        SELECT id FROM games 
-        WHERE season_id = %s 
-          AND status = 'locked'
-          AND (home_team_id = %s OR away_team_id = %s)
-    """, (season_id, team_id, team_id))
-    game_ids = [row[0] for row in cursor.fetchall()]
-    
-    if not game_ids:
-        cursor.close()
-        conn.close()
-        return None
-    
     # Count goals
     cursor.execute("""
-        SELECT COUNT(*) FROM events
-        WHERE game_id = ANY(%s)
-          AND player_id = %s
-          AND event_type = 'goal'
-    """, (game_ids, player_id))
+        SELECT COUNT(*)
+        FROM events e
+        JOIN games g ON e.game_id = g.id
+        WHERE g.season_id = %s
+          AND g.status = 'locked'
+          AND e.player_id = %s
+          AND e.event_type = 'goal'
+    """, (season_id, player_id))
     goals = cursor.fetchone()[0]
     
     # Count assists (from goal events' details JSONB)
     # Check if player_id is in the assists array using JSONB operators
     cursor.execute("""
-        SELECT COUNT(*) FROM events
-        WHERE game_id = ANY(%s)
-          AND event_type = 'goal'
-          AND details ? 'assists'
-          AND details->'assists' @> %s::jsonb
-    """, (game_ids, json.dumps([player_id])))
+        SELECT COUNT(*)
+        FROM events e
+        JOIN games g ON e.game_id = g.id
+        WHERE g.season_id = %s
+          AND g.status = 'locked'
+          AND e.event_type = 'goal'
+          AND e.details ? 'assists'
+          AND e.details->'assists' @> %s::jsonb
+    """, (season_id, json.dumps([player_id])))
     assists = cursor.fetchone()[0]
     
     # Count penalties
     cursor.execute("""
-        SELECT COUNT(*) FROM events
-        WHERE game_id = ANY(%s)
-          AND player_id = %s
-          AND event_type = 'penalty'
-    """, (game_ids, player_id))
+        SELECT COUNT(*)
+        FROM events e
+        JOIN games g ON e.game_id = g.id
+        WHERE g.season_id = %s
+          AND g.status = 'locked'
+          AND e.player_id = %s
+          AND e.event_type = 'penalty'
+    """, (season_id, player_id))
     penalties = cursor.fetchone()[0]
     
     # Calculate points (goals + assists)

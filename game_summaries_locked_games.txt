@@ -1,0 +1,114 @@
+Season: Spring 2026 (id=1)
+Locked games: 8
+
+============================================================
+Game 109: Maple Leafs @ Canadiens
+Date: 2026-01-11 00:00:00
+Final: Maple Leafs 3 - 4 Canadiens
+Shots: Maple Leafs 23 | Canadiens 19
+Outcome: so_win | OT: False | SO: True
+Goals - Maple Leafs: (none recorded)
+Goals - Canadiens: Giovanni K. (1), Marley M. (1)
+Assists - Maple Leafs: Julian D. (1), Jack P. (1)
+Assists - Canadiens: Jake F. (2), Jack W. (1)
+Goalies:
+- Canadiens: Olivia B. | SA 23 | GA 3 | Saves 20 | SV% 0.870
+- Maple Leafs: Phillip W. | SA 19 | GA 2 | Saves 17 | SV% 0.895
+
+============================================================
+Game 110: Red Wings @ Bruins
+Date: 2026-01-11 00:00:00
+Final: Red Wings 4 - 2 Bruins
+Shots: Red Wings 23 | Bruins 19
+Outcome: regulation_loss | OT: False | SO: False
+Goals - Red Wings: Jason G. (2), Josiah R. (2)
+Goals - Bruins: Kaiden S. (2)
+Assists - Red Wings: (none recorded)
+Assists - Bruins: (none recorded)
+Goalies:
+- Bruins: Olivia B. | SA 23 | GA 4 | Saves 19 | SV% 0.826
+- Red Wings: Phillip W. | SA 19 | GA 2 | Saves 17 | SV% 0.895
+
+============================================================
+Game 77: Bruins @ Maple Leafs
+Date: 2026-01-18 00:00:00
+Final: Bruins 1 - 5 Maple Leafs
+Shots: Bruins 12 | Maple Leafs 11
+Outcome: regulation_win | OT: False | SO: False
+Goals - Bruins: Kaiden S. (2), Dominic F. (1)
+Goals - Maple Leafs: Elijah F. (1), Julian D. (1), Noah G. (1), Ryan C. (1)
+Assists - Bruins: Charles G. (1)
+Assists - Maple Leafs: Elijah F. (2)
+Goalies:
+- Bruins: Briar P. | SA 11 | GA 4 | Saves 7 | SV% 0.636
+- Maple Leafs: Phillip W. | SA 12 | GA 3 | Saves 9 | SV% 0.750
+
+============================================================
+Game 78: Canadiens @ Red Wings
+Date: 2026-01-18 00:00:00
+Final: Canadiens 6 - 3 Red Wings
+Shots: Canadiens 30 | Red Wings 25
+Outcome: regulation_loss | OT: False | SO: False
+Goals - Canadiens: (none recorded)
+Goals - Red Wings: Austin O. (1), Jax L. (1)
+Assists - Canadiens: (none recorded)
+Assists - Red Wings: Alex W. (1), Jax L. (1), Matthew S. (1)
+Goalies:
+- Canadiens: Phillip W. | SA 25 | GA 2 | Saves 23 | SV% 0.920
+- Red Wings: Briar P. | SA 30 | GA 0 | Saves 30 | SV% 1.000
+
+============================================================
+Game 79: Red Wings @ Maple Leafs
+Date: 2026-01-25 00:00:00
+Final: Red Wings 1 - 3 Maple Leafs
+Shots: Red Wings 14 | Maple Leafs 25
+Outcome: regulation_win | OT: False | SO: False
+Goals - Red Wings: Jax L. (1)
+Goals - Maple Leafs: Noah G. (2), Julian D. (1)
+Assists - Red Wings: (none recorded)
+Assists - Maple Leafs: (none recorded)
+Goalies:
+- Maple Leafs: Phillip W. | SA 14 | GA 1 | Saves 13 | SV% 0.929
+- Red Wings: Briar P. | SA 25 | GA 3 | Saves 22 | SV% 0.880
+
+============================================================
+Game 80: Canadiens @ Bruins
+Date: 2026-01-25 00:00:00
+Final: Canadiens 3 - 2 Bruins
+Shots: Canadiens 32 | Bruins 11
+Outcome: regulation_loss | OT: False | SO: False
+Goals - Canadiens: Giovanni K. (1), Luca H. (1)
+Goals - Bruins: Dominic F. (1), Gustavo C. (1)
+Assists - Canadiens: Jake F. (1)
+Assists - Bruins: (none recorded)
+Goalies:
+- Bruins: Cove M. | SA 32 | GA 3 | Saves 29 | SV% 0.906
+- Canadiens: Olivia B. | SA 11 | GA 2 | Saves 9 | SV% 0.818
+
+============================================================
+Game 81: Bruins @ Red Wings
+Date: 2026-02-01 00:00:00
+Final: Bruins 3 - 1 Red Wings
+Shots: Bruins 28 | Red Wings 19
+Outcome: regulation_loss | OT: False | SO: False
+Goals - Bruins: Jacoby F. (1), Jadiel L. (1), Kaiden S. (1)
+Goals - Red Wings: Henry L. (1)
+Assists - Bruins: Nate M. (1), Javier R. (1)
+Assists - Red Wings: (none recorded)
+Goalies:
+- Bruins: Phillip W. | SA 19 | GA 1 | Saves 18 | SV% 0.947
+- Red Wings: Briar P. | SA 28 | GA 2 | Saves 26 | SV% 0.929
+
+============================================================
+Game 82: Maple Leafs @ Canadiens
+Date: 2026-02-01 00:00:00
+Final: Maple Leafs 7 - 1 Canadiens
+Shots: Maple Leafs 17 | Canadiens 17
+Outcome: regulation_loss | OT: False | SO: False
+Goals - Maple Leafs: Elijah F. (2), Austin P. (1), Julian D. (1), Nathan L. (1), Noah G. (1), Theo R. (1)
+Goals - Canadiens: Jake F. (1)
+Assists - Maple Leafs: Noah G. (1), Nathan L. (1), Sebastian R. (1), Austin P. (1), Theo R. (1)
+Assists - Canadiens: Jack W. (1)
+Goalies:
+- Canadiens: Olivia B. | SA 17 | GA 7 | Saves 10 | SV% 0.588
+- Maple Leafs: Phillip W. | SA 17 | GA 1 | Saves 16 | SV% 0.941

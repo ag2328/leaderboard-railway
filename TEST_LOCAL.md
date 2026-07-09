@@ -48,3 +48,7 @@ Before deploying to Railway, test the app locally to catch errors early.
 - **Database connection failed**: Check your DATABASE_URL is correct
 
 
+
+
+
+

@@ -13,3 +13,8 @@ CREATE INDEX IF NOT EXISTS idx_players_full_name
     ON players(full_name)
     WHERE full_name IS NOT NULL;
 
+
+
+
+
+

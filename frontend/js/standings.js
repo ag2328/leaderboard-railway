@@ -7,6 +7,42 @@
 import { fetchStandings } from './api-client.js';
 import { teamNameToSlug, getTeamLogoPath, displayError, displayLoading } from './utils.js';
 
+const REGULAR_SEASON_GAMES = 14;
+const NEXT_SEASON_LINK_TEXT = 'Click Here for Summer 2026 Stats';
+const SUMMER_CUBE_NOTICE = 'The Summer 2026 Stats Will Be Tracked by The Cube';
+const NEXT_SEASON_URL = 'https://www.thecubesantaclarita.com/standings/show/9423003?subseason=960235';
+
+function isSeasonComplete(standings = []) {
+    if (!standings.length) {
+        return false;
+    }
+    return standings.every(team => (team.games_played || 0) >= REGULAR_SEASON_GAMES);
+}
+
+function updateStandingsFooter(isSeasonFinal) {
+    const footer = document.querySelector('.standings-update-message');
+    if (!footer) {
+        return;
+    }
+
+    if (isSeasonFinal) {
+        footer.classList.add('season-final-message');
+        const nextSeasonMarkup = NEXT_SEASON_URL
+            ? `<a class="season-link-live" href="${NEXT_SEASON_URL}">${NEXT_SEASON_LINK_TEXT}</a>`
+            : `<span class="season-link-placeholder">${NEXT_SEASON_LINK_TEXT} (Coming Soon)</span>`;
+
+        footer.innerHTML = `
+            <div class="season-final-thanks">Thank you for a great season! Congratulations to the Canadiens for their 1st place finish.</div>
+            <div class="season-cube-notice">${SUMMER_CUBE_NOTICE}</div>
+            ${nextSeasonMarkup}
+        `;
+        return;
+    }
+
+    footer.classList.remove('season-final-message');
+    footer.textContent = 'Standings updated by 8pm on Mondays';
+}
+
 /**
  * Render the standings table
  */
@@ -29,15 +65,20 @@ export function renderStandings(standingsData, container) {
         </div>
     `;
 
-    standingsData.standings.forEach((team) => {
+    const seasonFinal = isSeasonComplete(standingsData.standings);
+
+    standingsData.standings.forEach((team, index) => {
         const teamSlug = teamNameToSlug(team.team_name);
         const logoPath = getTeamLogoPath(team.team_name);
+        const championClass = seasonFinal && index === 0 ? ' champion-row' : '';
+        const championLogoClass = seasonFinal && index === 0 ? ' champion-logo' : '';
+        const championNameClass = seasonFinal && index === 0 ? ' champion-team-name' : '';
         
         html += `
-            <div class="standings-row">
-                <img class="team-logo" src="${logoPath}" alt="${team.team_name}" 
+            <div class="standings-row${championClass}">
+                <img class="team-logo${championLogoClass}" src="${logoPath}" alt="${team.team_name}" 
                      onerror="this.style.display='none'">
-                <div class="team-name">
+                <div class="team-name${championNameClass}">
                     <a href="#team/${teamSlug}" data-team-id="${team.team_id}">${team.team_name}</a>
                 </div>
                 <div class="team-gp">${team.games_played || 0}</div>
@@ -51,6 +92,7 @@ export function renderStandings(standingsData, container) {
     });
 
     container.innerHTML = html;
+    updateStandingsFooter(seasonFinal);
 }
 
 /**

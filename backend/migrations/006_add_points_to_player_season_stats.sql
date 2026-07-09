@@ -19,3 +19,5 @@ SET points = goals + assists;
 -- Add comment
 COMMENT ON COLUMN player_season_stats.points IS 'Player points (goals + assists)';
 
+
+
