@@ -837,6 +837,355 @@ body {
     font-style: italic;
 }
 
+/* Mobile-only historical presentation */
+body {
+    display: flex;
+    justify-content: center;
+    padding: 18px 14px 40px;
+}
+
+#root {
+    width: 100%;
+    max-width: 430px;
+}
+
+.screen,
+.mobile-schedule,
+.player-stats-container {
+    width: 100%;
+}
+
+.team-header {
+    margin-bottom: 42px;
+}
+
+.team-header .app-logo {
+    width: 68px;
+    height: 68px;
+    margin-bottom: 12px;
+}
+
+.team-header .app-title {
+    font-size: 34px;
+    line-height: 1.05;
+    margin-bottom: 12px;
+}
+
+.back-link {
+    display: inline-flex;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.mobile-schedule {
+    display: grid;
+    gap: 22px;
+    min-width: 0;
+}
+
+.archive-game-card {
+    width: 100%;
+    overflow: hidden;
+    background: var(--surface-1);
+    border: 1px solid var(--border-light);
+    border-radius: 18px;
+    box-shadow: var(--shadow-sm);
+}
+
+.archive-game-date {
+    padding: 14px 16px 11px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.065em;
+    text-align: center;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+}
+
+.archive-scoreboard {
+    appearance: none;
+    width: 100%;
+    min-height: 186px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 72px minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+    padding: 20px 14px 18px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    border: 0;
+    cursor: pointer;
+}
+
+.archive-team {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    text-align: center;
+}
+
+.archive-team img {
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    object-fit: contain;
+    background: var(--surface-2);
+}
+
+.archive-team span {
+    width: 100%;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-primary);
+    font-size: 16px;
+    font-weight: 650;
+    line-height: 1.2;
+}
+
+.archive-team strong {
+    color: var(--text-primary);
+    font-size: 42px;
+    line-height: 1;
+}
+
+.archive-team.winner span,
+.archive-team.winner strong {
+    color: var(--accent-success);
+}
+
+.archive-game-status {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.055em;
+}
+
+.archive-game-status small {
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: normal;
+}
+
+.archive-game-details {
+    padding: 20px 14px 18px;
+    border-top: 1px solid var(--border-light);
+    background: #151515;
+}
+
+.archive-game-details h2 {
+    margin-bottom: 20px;
+    font-size: 22px;
+    text-align: center;
+}
+
+.archive-game-details h3 {
+    margin-bottom: 10px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.scoring-section,
+.shots-section {
+    display: grid;
+    gap: 12px;
+}
+
+.shots-section {
+    margin-top: 22px;
+}
+
+.scoring-team,
+.shots-section {
+    overflow: hidden;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+}
+
+.scoring-section > h3,
+.shots-section > h3 {
+    margin: 0;
+    padding: 11px 12px 9px;
+    background: var(--surface-1);
+}
+
+.scoring-team-heading,
+.shot-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 11px 13px;
+}
+
+.scoring-team-heading {
+    background: var(--surface-3);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.scoring-team-heading span,
+.shot-row span {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-weight: 700;
+}
+
+.scoring-team-heading img,
+.shot-row img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    border-radius: 50%;
+}
+
+.scoring-team-heading > strong,
+.shot-row > strong {
+    font-size: 20px;
+}
+
+.goal-row {
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 9px;
+    padding: 11px 13px;
+    border-bottom: 1px solid var(--border);
+}
+
+.goal-row:last-child,
+.shot-row:last-child {
+    border-bottom: 0;
+}
+
+.goal-number {
+    width: 22px;
+    height: 22px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--surface-3);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.goal-row div {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.goal-row div > strong {
+    overflow-wrap: anywhere;
+    font-size: 15px;
+    line-height: 1.25;
+}
+
+.goal-row small,
+.goal-period,
+.no-scoring-detail {
+    color: var(--text-muted);
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.goal-period {
+    padding-top: 2px;
+    white-space: nowrap;
+}
+
+.no-scoring-detail {
+    padding: 13px;
+    text-align: center;
+}
+
+.shot-row {
+    border-bottom: 1px solid var(--border);
+}
+
+.player-stats-container {
+    margin-top: 42px;
+}
+
+@media (max-width: 430px) {
+    body {
+        padding-inline: 12px;
+    }
+
+    .standings-header,
+    .standings-row {
+        grid-template-columns: 38px minmax(82px, 1.45fr) repeat(6, minmax(26px, 0.55fr));
+        padding-inline: 7px;
+        font-size: 12px;
+    }
+
+    .standings-container {
+        min-width: 0;
+    }
+
+    .player-stats-table {
+        min-width: 0;
+        table-layout: fixed;
+    }
+
+    .player-stats-table th,
+    .player-stats-table td {
+        padding: 9px 4px;
+        font-size: 12px;
+    }
+
+    .player-stats-table th:nth-child(1),
+    .player-stats-table td:nth-child(1) {
+        width: 26px;
+    }
+
+    .player-stats-table th:nth-child(2),
+    .player-stats-table td:nth-child(2) {
+        width: auto;
+    }
+
+    .player-stats-table th:nth-child(n+3),
+    .player-stats-table td:nth-child(n+3) {
+        width: 31px;
+    }
+
+    .goalie-stats-table th:nth-child(n+3),
+    .goalie-stats-table td:nth-child(n+3) {
+        width: 36px;
+    }
+
+    .archive-scoreboard {
+        grid-template-columns: minmax(0, 1fr) 64px minmax(0, 1fr);
+        padding-inline: 10px;
+    }
+
+    .archive-team img {
+        width: 58px;
+        height: 58px;
+    }
+
+    .archive-team span {
+        font-size: 15px;
+    }
+}
+
 /* Navigation */
 .back-link {
     display: inline-block;
