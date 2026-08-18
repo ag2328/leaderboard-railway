@@ -10,6 +10,24 @@ This application reads game data from the shared Postgres database (used by Scor
 - Player statistics (goals, assists, penalties)
 - Goalie statistics (saves, save percentage)
 
+## Historical archive
+
+The original Railway service is retired. A browser-only snapshot of the final
+Spring 2026 standings, schedules, player statistics, and goalie statistics lives
+in [`archive-site`](archive-site). It contains no database connection or server
+runtime and is deployed to GitHub Pages by
+[`pages.yml`](.github/workflows/pages.yml).
+
+To run or verify the archive locally:
+
+```bash
+cd archive-site
+npm ci
+npm run typecheck
+npm run build
+npm run dev
+```
+
 ## Tech Stack
 
 - **Backend**: Flask (Python)

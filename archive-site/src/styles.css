@@ -1,0 +1,898 @@
+/* ============================================
+   LEGENDS LEADERBOARD - Main Stylesheet
+   Dark theme matching Legends Ratings app
+   ============================================ */
+
+/* CSS Variables - Dark Theme */
+:root {
+    /* Dark Theme Base */
+    --background: #000000;
+    --surface-1: #1a1a1a;
+    --surface-2: #2a2a2a;
+    --surface-3: #333333;
+    
+    /* Accent Colors */
+    --accent: #7ec0ee;
+    --accent-hover: #9dd0f5;
+    --accent-success: #34c759;
+    --accent-warning: #ff9f0a;
+    --accent-danger: #ff453a;
+    --logo-blue: #7ec0ee;
+    
+    /* Text Colors */
+    --text-primary: #ffffff;
+    --text-secondary: rgba(255, 255, 255, 0.75);
+    --text-muted: rgba(255, 255, 255, 0.6);
+    
+    /* Borders */
+    --border: rgba(255, 255, 255, 0.08);
+    --border-light: rgba(255, 255, 255, 0.12);
+    
+    /* Team Colors */
+    --bruins-primary: #FFB81C;
+    --bruins-text: #000000;
+    --canadiens-primary: #AF1E2D;
+    --canadiens-text: #FFFFFF;
+    --canadiens-accent: #192168;
+    --maple-leafs-primary: #00205B;
+    --maple-leafs-text: #FFFFFF;
+    --red-wings-primary: #CE1126;
+    --red-wings-text: #FFFFFF;
+    
+    /* Spacing */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    --spacing-xxl: 3rem;
+    
+    /* Border Radius */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-full: 50%;
+    
+    /* Shadows */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.5);
+    
+    /* Transitions */
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.25s ease;
+    --transition-slow: 0.4s ease;
+}
+
+/* Reset & Base Styles */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html {
+    font-size: 16px;
+}
+
+body {
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--background);
+    color: var(--text-primary);
+    padding: 16px;
+    max-width: 100%;
+}
+
+/* Screen Management */
+.screen {
+    width: 100%;
+}
+
+.screen.hidden {
+    display: none;
+}
+
+/* App Header */
+.app-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.app-logo {
+    display: inline-block;
+    margin-bottom: 16px;
+    width: 54px;
+    height: 54px;
+    background-color: var(--logo-blue);
+    border-radius: 14px;
+    position: relative;
+    transform: rotate(45deg);
+}
+
+.app-logo::after {
+    display: none;
+}
+
+.app-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 14px;
+}
+
+/* Team page specific logo styles */
+#team-page .app-logo {
+    border-radius: 50%;
+    transform: none;
+}
+
+#team-page .app-logo img {
+    border-radius: 50%;
+}
+
+.app-title {
+    font-size: 30px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.app-subtitle {
+    font-size: 17px;
+    color: var(--text-secondary);
+}
+
+.app-season {
+    font-size: 17px;
+    color: var(--text-secondary);
+    margin-top: 0;
+}
+
+/* Standings */
+.standings-container {
+    display: grid;
+    grid-template-rows: auto;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: none;
+    margin-bottom: 32px;
+    min-width: 320px;
+}
+
+.standings-header {
+    display: grid;
+    grid-template-columns: 2.5em 12em 0.8fr 0.8fr 0.8fr 0.8fr 1fr 1.2fr;
+    align-items: center;
+    padding: 0.5em 1em;
+    background: var(--surface-2);
+    font-weight: 700;
+    font-size: 1em;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border);
+    text-transform: uppercase;
+}
+
+.standings-header > div:not(:nth-child(2)),
+.standings-row > div:not(:nth-child(2)) {
+    text-align: center;
+}
+
+.standings-header > .header-pts,
+.standings-row > .team-pts {
+    text-align: right;
+}
+
+.standings-header > .header-team,
+.standings-row > .team-name {
+    text-align: left;
+}
+
+.standings-row {
+    display: grid;
+    grid-template-columns: 2.5em 12em 0.8fr 0.8fr 0.8fr 0.8fr 1fr 1.2fr;
+    align-items: center;
+    padding: 0.5em 1em;
+    border-bottom: 1px solid var(--border);
+    font-size: 1.25em;
+    background: none;
+}
+
+.standings-row:last-child {
+    border-bottom: none;
+}
+
+.team-logo {
+    width: 2em;
+    height: 2em;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--surface-2);
+    display: block;
+}
+
+.team-name {
+    font-weight: 600;
+    font-size: 1.25em;
+    color: var(--text-primary);
+    margin-left: 0.5em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.team-name a {
+    color: var(--text-primary);
+    text-decoration: none;
+    display: block;
+    width: 100%;
+}
+
+.team-name a:hover {
+    color: var(--accent);
+}
+
+.team-gp,
+.team-w,
+.team-l,
+.team-t,
+.team-gs,
+.team-pts {
+    text-align: center;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.team-pts {
+    color: var(--accent);
+    font-weight: 700;
+}
+
+@media (max-width: 500px) {
+    .standings-header, .standings-row {
+        font-size: 1.1em;
+        padding: 0.3em 0.5em;
+        grid-template-columns: 1.2em 8em 0.8fr 0.8fr 0.8fr 0.8fr 1fr 1.2fr;
+    }
+    .team-logo {
+        width: 1.2em;
+        height: 1.2em;
+    }
+    .team-name {
+        font-size: 1.1em;
+    }
+}
+
+/* Schedule - Apple Sports Style */
+.schedule-container {
+    overflow: hidden;
+    background: none;
+    margin-bottom: 32px;
+    min-width: 320px;
+    font-family: 'Outfit', sans-serif;
+}
+
+.schedule-date-section {
+    margin-bottom: var(--spacing-lg);
+}
+
+.schedule-date-section:last-child {
+    margin-bottom: 0;
+}
+
+.schedule-date-header {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-md);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.schedule-game-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-sm);
+    background: var(--surface-1);
+    gap: var(--spacing-md);
+}
+
+.schedule-game-row:last-child {
+    margin-bottom: 0;
+}
+
+.schedule-game-teams {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    gap: var(--spacing-md);
+}
+
+.schedule-game-team {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    gap: var(--spacing-xs);
+}
+
+.schedule-game-team.winner .schedule-team-name {
+    font-weight: 700;
+    color: var(--accent-success);
+}
+
+.schedule-team-logo {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--surface-2);
+}
+
+.schedule-team-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: center;
+}
+
+.schedule-team-score {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+    margin-top: var(--spacing-xs);
+}
+
+.schedule-game-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 60px;
+}
+
+.schedule-game-vs {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: lowercase;
+}
+
+.schedule-game-time {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.schedule-final-status {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.schedule-result-badge {
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: var(--radius-sm);
+    text-align: center;
+    min-width: 32px;
+}
+
+.schedule-result-badge.w {
+    background: rgba(52, 199, 89, 0.2);
+    color: var(--accent-success);
+}
+
+.schedule-result-badge.l {
+    background: rgba(255, 69, 58, 0.2);
+    color: var(--accent-danger);
+}
+
+.schedule-result-badge.t {
+    background: var(--surface-2);
+    color: var(--text-secondary);
+}
+
+.schedule-game-row.completed,
+.schedule-game-row.upcoming {
+    padding: var(--spacing-sm);
+}
+
+.schedule-game-row .schedule-game-team {
+    opacity: 0.85;
+    gap: var(--spacing-xs);
+}
+
+.schedule-game-row .schedule-team-logo {
+    width: 44px;
+    height: 44px;
+}
+
+.schedule-game-row .schedule-team-name {
+    font-size: 0.85rem;
+}
+
+@media (max-width: 480px) {
+    .schedule-game-row {
+        padding: var(--spacing-sm);
+        gap: var(--spacing-sm);
+    }
+
+    .schedule-team-logo {
+        width: 48px;
+        height: 48px;
+    }
+
+    .schedule-team-name {
+        font-size: 0.85rem;
+    }
+
+    .schedule-team-score {
+        font-size: 1.25rem;
+    }
+
+    .schedule-game-vs {
+        font-size: 1.1rem;
+    }
+
+    .schedule-game-row.upcoming .schedule-team-logo {
+        width: 36px;
+        height: 36px;
+    }
+
+    .schedule-game-row.upcoming .schedule-team-name {
+        font-size: 0.75rem;
+    }
+
+    .schedule-game-row.upcoming .schedule-game-vs {
+        font-size: 1rem;
+    }
+
+    .schedule-game-time {
+        font-size: 0.8rem;
+    }
+
+    .schedule-result-badge {
+        font-size: 0.75rem;
+        padding: 3px 8px;
+        min-width: 28px;
+    }
+}
+
+/* Game Summary Cards - Apple Sports Style with Flip */
+.game-card-container {
+    perspective: 1000px;
+    margin-bottom: var(--spacing-md);
+    cursor: pointer;
+}
+
+.game-card-flipper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+}
+
+.game-card-flipper.flipped {
+    transform: rotateY(180deg);
+}
+
+.game-card-front,
+.game-card-back {
+    position: absolute;
+    width: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.game-card-back {
+    transform: rotateY(180deg);
+}
+
+.game-card {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    min-height: 200px;
+}
+
+.game-card-date {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-bottom: var(--spacing-md);
+    text-align: center;
+}
+
+.game-card-scoreboard {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+}
+
+.game-card-team-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    gap: var(--spacing-sm);
+}
+
+.game-card-team-section.winner .game-card-score {
+    color: var(--accent-success);
+    font-weight: 800;
+}
+
+.game-card-logo {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--surface-2);
+}
+
+.game-card-team-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: center;
+}
+
+.game-card-score {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+    margin-top: var(--spacing-xs);
+}
+
+.game-card-status {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0 var(--spacing-sm);
+    flex-shrink: 0;
+}
+
+/* Game Card Back Side */
+.game-card-back-content {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    min-height: 200px;
+}
+
+.game-card-back-loading,
+.game-card-back-error {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: var(--spacing-xl);
+}
+
+.game-card-stats-section {
+    margin-bottom: var(--spacing-lg);
+}
+
+.game-card-stats-section:last-child {
+    margin-bottom: 0;
+}
+
+.game-card-stats-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-sm);
+    text-align: center;
+}
+
+.game-card-stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface-2);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.game-card-stats-table th {
+    background: var(--surface-3);
+    padding: var(--spacing-sm);
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    text-align: center;
+    border-bottom: 2px solid var(--border);
+}
+
+.game-card-stats-table td {
+    padding: var(--spacing-sm);
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+}
+
+.game-card-stats-table .team-cell {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    text-align: left;
+    font-weight: 700;
+}
+
+.game-card-stats-table .team-logo-small {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.game-card-stats-table .team-abbrev {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.game-card-stats-table .total-cell {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.game-card-stats-table .total-row {
+    background: var(--surface-1);
+    border-top: 2px solid var(--border);
+}
+
+.game-card-stats-table .total-row td {
+    font-weight: 700;
+}
+
+@media (max-width: 480px) {
+    .game-card,
+    .game-card-back-content {
+        padding: var(--spacing-md);
+        min-height: 180px;
+    }
+    
+    .game-card-logo {
+        width: 56px;
+        height: 56px;
+    }
+    
+    .game-card-score {
+        font-size: 2.5rem;
+    }
+    
+    .game-card-team-name {
+        font-size: 0.85rem;
+    }
+    
+    .game-card-status {
+        font-size: 0.7rem;
+    }
+    
+    .game-card-stats-table {
+        font-size: 0.8rem;
+    }
+    
+    .game-card-stats-table th,
+    .game-card-stats-table td {
+        padding: 0.5rem 0.25rem;
+    }
+    
+    .game-card-stats-table .team-logo-small {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+/* Player Stats */
+.player-stats-container {
+    margin-top: 32px;
+    background: none;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    min-height: 0;
+}
+
+.player-stats-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+}
+
+.player-stats-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.player-stats-table th,
+.player-stats-table td {
+    padding: var(--spacing-sm) var(--spacing-md);
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.player-stats-table th:nth-child(1),
+.player-stats-table td:nth-child(1) {
+    text-align: left;
+}
+
+.player-stats-table th:nth-child(2),
+.player-stats-table td:nth-child(2) {
+    text-align: left;
+}
+
+.player-stats-table th:nth-child(n+3),
+.player-stats-table td:nth-child(n+3) {
+    text-align: center;
+}
+
+.player-stats-table th {
+    background: var(--surface-2);
+    font-weight: 700;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.player-stats-table td {
+    color: var(--text-primary);
+}
+
+.player-name-cell {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+.player-stats-table tbody tr:hover {
+    background: var(--surface-2);
+}
+
+.goalie-header-row {
+    background: var(--surface-2);
+    border-top: 2px solid var(--border);
+}
+
+.goalie-row {
+    border-bottom: 2px solid var(--border);
+}
+
+.goalie-stats-container {
+    margin-top: var(--spacing-xl);
+    display: flex;
+    justify-content: center;
+}
+
+.goalie-stats-table {
+    margin: 0 auto;
+}
+
+.stats-legend {
+    margin-top: var(--spacing-xl);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--border);
+}
+
+.legend-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-sm);
+    text-align: center;
+}
+
+.legend-items {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.legend-line {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--spacing-md);
+}
+
+.legend-item {
+    display: flex;
+    gap: var(--spacing-xs);
+}
+
+.legend-key {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.stats-update-message {
+    margin-top: var(--spacing-lg);
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* Navigation */
+.back-link {
+    display: inline-block;
+    margin-bottom: var(--spacing-md);
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color var(--transition-fast);
+}
+
+.back-link:hover {
+    color: var(--accent-hover);
+    text-decoration: underline;
+}
+
+/* Loading & Error States */
+.loading {
+    text-align: center;
+    padding: var(--spacing-xl);
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.error {
+    text-align: center;
+    padding: var(--spacing-xl);
+    color: var(--accent-danger);
+    font-weight: 500;
+}
+
+/* Standings Update Message */
+.standings-update-message {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-top: var(--spacing-md);
+    font-weight: 400;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--surface-1);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--surface-3);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+
